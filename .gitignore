@@ -1,0 +1,40 @@
+# Ignorar pastas de build
+target/
+
+# Ignorar apenas o JAR do Maven Wrapper, mas não o resto do .mvn
+.mvn/wrapper/maven-wrapper.jar
+
+
+!.mvn/
+
+# Manter exceções para builds dentro de src
+!**/src/main/**/target/
+!**/src/test/**/target/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+
+### VS Code ###
+.vscode/
