@@ -33,32 +33,37 @@ public class RateLimitFilter extends OncePerRequestFilter {
         ConcurrentLinkedDeque<Long> timestamps = requestCounts.computeIfAbsent(clientIp,
                 k -> new ConcurrentLinkedDeque<>());
 
-        while (!timestamps.isEmpty() && timestamps.peekFirst() < now - WINDOW_MS) {
-            timestamps.pollFirst();
+        synchronized (timestamps) {
+            while (!timestamps.isEmpty() && timestamps.peekFirst() < now - WINDOW_MS) {
+                timestamps.pollFirst();
+            }
+
+            int currentCount = timestamps.size();
+
+            response.setHeader("X-RateLimit-Limit", String.valueOf(MAX_REQUESTS));
+            response.setHeader("X-RateLimit-Remaining", String.valueOf(Math.max(0, MAX_REQUESTS - currentCount - 1)));
+
+            if (currentCount >= MAX_REQUESTS) {
+                Long oldest = timestamps.peekFirst();
+                long retryAfterSeconds = (oldest != null)
+                        ? Math.max(1, (oldest + WINDOW_MS - now) / 1000)
+                        : 1;
+
+                response.setHeader("Retry-After", String.valueOf(retryAfterSeconds));
+                response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
+                response.setContentType("application/json;charset=UTF-8");
+
+                Map<String, Object> body = new LinkedHashMap<>();
+                body.put("timestamp", LocalDateTime.now().toString());
+                body.put("status", 429);
+                body.put("mensagem", "Limite de requisições excedido. Tente novamente em " + retryAfterSeconds + " segundos.");
+                response.getWriter().write(MAPPER.writeValueAsString(body));
+                return;
+            }
+
+            timestamps.addLast(now);
         }
 
-        int currentCount = timestamps.size();
-
-        response.setHeader("X-RateLimit-Limit", String.valueOf(MAX_REQUESTS));
-        response.setHeader("X-RateLimit-Remaining", String.valueOf(Math.max(0, MAX_REQUESTS - currentCount - 1)));
-
-        if (currentCount >= MAX_REQUESTS) {
-            long oldestTimestamp = timestamps.peekFirst();
-            long retryAfterSeconds = Math.max(1, (oldestTimestamp + WINDOW_MS - now) / 1000);
-
-            response.setHeader("Retry-After", String.valueOf(retryAfterSeconds));
-            response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
-            response.setContentType("application/json;charset=UTF-8");
-
-            Map<String, Object> body = new LinkedHashMap<>();
-            body.put("timestamp", LocalDateTime.now().toString());
-            body.put("status", 429);
-            body.put("mensagem", "Limite de requisições excedido. Tente novamente em " + retryAfterSeconds + " segundos.");
-            response.getWriter().write(MAPPER.writeValueAsString(body));
-            return;
-        }
-
-        timestamps.addLast(now);
         filterChain.doFilter(request, response);
     }
 

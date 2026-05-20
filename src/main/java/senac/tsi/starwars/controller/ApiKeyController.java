@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
@@ -51,7 +52,8 @@ public class ApiKeyController {
     }
 
     @Operation(summary = "Revoga uma API Key",
-            description = "Desativa uma API Key existente. Requer autenticação com header X-API-Key válido.")
+            description = "Desativa uma API Key existente. Requer autenticação com header X-API-Key válido.",
+            security = @SecurityRequirement(name = "apiKey"))
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "API Key revogada"),
             @ApiResponse(responseCode = "401", description = "X-API-Key ausente", content = @Content),

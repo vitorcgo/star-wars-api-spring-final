@@ -1,6 +1,7 @@
 package senac.tsi.starwars.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -73,7 +74,7 @@ public class PersonController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Cria um novo personagem")
+    @Operation(summary = "Cria um novo personagem", security = @SecurityRequirement(name = "apiKey"))
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Personagem criado"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content),
@@ -91,7 +92,7 @@ public class PersonController {
         return ResponseEntity.status(HttpStatus.CREATED).body(model);
     }
 
-    @Operation(summary = "Atualiza um personagem")
+    @Operation(summary = "Atualiza um personagem", security = @SecurityRequirement(name = "apiKey"))
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Personagem atualizado"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content),
@@ -111,7 +112,7 @@ public class PersonController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Remove um personagem")
+    @Operation(summary = "Remove um personagem", security = @SecurityRequirement(name = "apiKey"))
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Personagem removido"),
             @ApiResponse(responseCode = "401", description = "X-API-Key ausente", content = @Content),

@@ -73,7 +73,17 @@ public class SwapiDataLoaderService implements CommandLineRunner {
         loadStarships();
         loadPeople();
         loadFilms();
+        clearLookupCaches();
         log.info("=== Carregamento concluído ===");
+    }
+
+    private void clearLookupCaches() {
+        planetUrlToId.clear();
+        speciesUrlToId.clear();
+        personUrlToId.clear();
+        starshipUrlToId.clear();
+        usedPlanetIdsForHomeworld.clear();
+        usedStarshipIdsForPilot.clear();
     }
 
     // -------------------------------------------------------------------------

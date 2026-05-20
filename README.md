@@ -2,12 +2,12 @@
 
 API RESTful que consome dados da [SWAPI](https://swapi.info/) e os expõe com suporte a paginação, HATEOAS, autenticação por API Key, rate limiting, idempotência e documentação Swagger.
 
-**Projeto Acadêmico** — Spring Boot 4 + Java 25
+**Projeto Acadêmico** — Spring Boot 4 + Java 17
 
 ## Como Executar
 
 ### Pré-requisitos
-- Java 25+
+- Java 17+
 - Maven 3.9+
 
 ### Rodar localmente
@@ -176,7 +176,7 @@ A API permite requisições cross-origin de `localhost:3000` e `localhost:8080` 
 ## Tecnologias
 
 - Spring Boot 4.0.3
-- Java 25
+- Java 17
 - H2 Database (em memória)
 - Spring Data JPA
 - Spring HATEOAS

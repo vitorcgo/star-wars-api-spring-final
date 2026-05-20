@@ -9,12 +9,16 @@ import org.springframework.web.util.ContentCachingResponseWrapper;
 import senac.tsi.starwars.model.IdempotencyRecord;
 import senac.tsi.starwars.repository.IdempotencyRecordRepository;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 public class IdempotencyFilter extends OncePerRequestFilter {
 
+    private static final Logger log = LoggerFactory.getLogger(IdempotencyFilter.class);
     private static final String IDEMPOTENCY_HEADER = "X-Idempotency-Key";
 
     private final IdempotencyRecordRepository repository;
@@ -65,7 +69,8 @@ public class IdempotencyFilter extends OncePerRequestFilter {
 
         try {
             repository.save(record);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            log.warn("Falha ao salvar registro de idempotencia para key '{}'", idempotencyKey, e);
         }
 
         wrappedResponse.copyBodyToResponse();

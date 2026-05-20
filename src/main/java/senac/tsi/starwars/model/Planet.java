@@ -1,6 +1,7 @@
 package senac.tsi.starwars.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -27,6 +28,7 @@ public class Planet {
     @NotBlank(message = "Nome é obrigatório")
     @Size(max = 200, message = "Nome deve ter no máximo 200 caracteres")
     @Column(nullable = false)
+    @Schema(example = "Tatooine")
     private String name;
 
     /**
@@ -35,13 +37,18 @@ public class Planet {
      */
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Schema(example = "ARID")
     private PlanetClimate climate = PlanetClimate.UNKNOWN;
 
     @Size(max = 500)
+    @Schema(example = "desert")
     private String terrain;
 
+    @Schema(example = "200000")
     private String population;
+    @Schema(example = "10465")
     private String diameter;
+    @Schema(example = "https://swapi.dev/api/planets/1/")
     private String swapiUrl;
 
     /**

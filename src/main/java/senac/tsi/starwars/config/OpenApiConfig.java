@@ -4,7 +4,6 @@ import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
-import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.tags.Tag;
 import org.springframework.context.annotation.Bean;
@@ -41,7 +40,6 @@ public class OpenApiConfig {
                                 .name("X-API-Key")
                                 .description("Chave de API necessaria para operacoes de escrita. "
                                         + "Gere em POST /api/auth/keys e cole aqui.")))
-                .addSecurityItem(new SecurityRequirement().addList("apiKey"))
                 .addTagsItem(new Tag().name("Autenticacao"))
                 .addTagsItem(new Tag().name("Films V2"))
                 .addTagsItem(new Tag().name("Films"))

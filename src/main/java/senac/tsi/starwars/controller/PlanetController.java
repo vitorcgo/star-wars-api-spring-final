@@ -1,6 +1,7 @@
 package senac.tsi.starwars.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -74,7 +75,7 @@ public class PlanetController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Cria um novo planeta")
+    @Operation(summary = "Cria um novo planeta", security = @SecurityRequirement(name = "apiKey"))
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Planeta criado"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content),
@@ -92,7 +93,7 @@ public class PlanetController {
         return ResponseEntity.status(HttpStatus.CREATED).body(model);
     }
 
-    @Operation(summary = "Atualiza um planeta existente")
+    @Operation(summary = "Atualiza um planeta existente", security = @SecurityRequirement(name = "apiKey"))
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Planeta atualizado"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content),
@@ -112,7 +113,7 @@ public class PlanetController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Remove um planeta")
+    @Operation(summary = "Remove um planeta", security = @SecurityRequirement(name = "apiKey"))
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Planeta removido"),
             @ApiResponse(responseCode = "401", description = "X-API-Key ausente", content = @Content),

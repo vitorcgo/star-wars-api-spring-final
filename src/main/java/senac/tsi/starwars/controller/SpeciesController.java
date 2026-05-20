@@ -1,6 +1,7 @@
 package senac.tsi.starwars.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -74,7 +75,7 @@ public class SpeciesController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Cria uma nova espécie")
+    @Operation(summary = "Cria uma nova espécie", security = @SecurityRequirement(name = "apiKey"))
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Espécie criada"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content),
@@ -92,7 +93,7 @@ public class SpeciesController {
         return ResponseEntity.status(HttpStatus.CREATED).body(model);
     }
 
-    @Operation(summary = "Atualiza uma espécie")
+    @Operation(summary = "Atualiza uma espécie", security = @SecurityRequirement(name = "apiKey"))
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Espécie atualizada"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content),
@@ -112,7 +113,7 @@ public class SpeciesController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Remove uma espécie")
+    @Operation(summary = "Remove uma espécie", security = @SecurityRequirement(name = "apiKey"))
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Espécie removida"),
             @ApiResponse(responseCode = "401", description = "X-API-Key ausente", content = @Content),
