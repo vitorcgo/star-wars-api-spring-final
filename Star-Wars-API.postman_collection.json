@@ -37,17 +37,6 @@
 					}
 				},
 				{
-					"name": "Listar API Keys",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/api/auth/keys",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "auth", "keys"]
-						}
-					}
-				},
-				{
 					"name": "Revogar API Key",
 					"request": {
 						"method": "DELETE",

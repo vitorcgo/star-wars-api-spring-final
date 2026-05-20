@@ -23,7 +23,8 @@ import senac.tsi.starwars.service.PersonService;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
-@Tag(name = "People", description = "Gerenciamento de personagens Star Wars")
+@Tag(name = "People", description = "CRUD de personagens Star Wars. Listagem paginada, busca por ID/nome/genero. "
+        + "Cada personagem possui relacoes com planeta, especie e nave.")
 @RestController
 @RequestMapping("/api/people")
 public class PersonController {

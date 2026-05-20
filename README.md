@@ -102,12 +102,11 @@ docker run -p 8080:8080 starwars-api
 | GET | `/api/starships/search/by-class?starshipClass=` | Busca por classe |
 | GET | `/api/starships/search/by-name?name=` | Busca por nome |
 
-### API Keys (`/api/auth/keys`)
+### Autenticacao (`/api/auth/keys`)
 | Método | Endpoint | Descrição |
 |--------|----------|-----------|
-| POST | `/api/auth/keys` | Gera nova API Key |
-| GET | `/api/auth/keys` | Lista todas as chaves |
-| DELETE | `/api/auth/keys/{id}` | Revoga uma chave |
+| POST | `/api/auth/keys` | Gera nova API Key (público) |
+| DELETE | `/api/auth/keys/{id}` | Revoga uma chave (requer X-API-Key) |
 
 ## Autenticação (X-API-Key)
 

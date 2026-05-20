@@ -13,22 +13,22 @@ import senac.tsi.starwars.service.ApiKeyService;
 public class FilterConfig {
 
     @Bean
-    public FilterRegistrationBean<RateLimitFilter> rateLimitFilter() {
-        FilterRegistrationBean<RateLimitFilter> registration = new FilterRegistrationBean<>();
-        registration.setFilter(new RateLimitFilter());
-        registration.addUrlPatterns("/api/*");
-        registration.setOrder(1);
-        registration.setName("rateLimitFilter");
-        return registration;
-    }
-
-    @Bean
     public FilterRegistrationBean<ApiKeyFilter> apiKeyFilter(ApiKeyService apiKeyService) {
         FilterRegistrationBean<ApiKeyFilter> registration = new FilterRegistrationBean<>();
         registration.setFilter(new ApiKeyFilter(apiKeyService));
         registration.addUrlPatterns("/api/*");
-        registration.setOrder(2);
+        registration.setOrder(1);
         registration.setName("apiKeyFilter");
+        return registration;
+    }
+
+    @Bean
+    public FilterRegistrationBean<RateLimitFilter> rateLimitFilter() {
+        FilterRegistrationBean<RateLimitFilter> registration = new FilterRegistrationBean<>();
+        registration.setFilter(new RateLimitFilter());
+        registration.addUrlPatterns("/api/*");
+        registration.setOrder(2);
+        registration.setName("rateLimitFilter");
         return registration;
     }
 

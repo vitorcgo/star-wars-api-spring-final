@@ -1,8 +1,6 @@
 package senac.tsi.starwars.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import senac.tsi.starwars.exception.ResourceNotFoundException;
@@ -32,11 +30,6 @@ public class ApiKeyService {
     @Transactional(readOnly = true)
     public boolean isValidKey(String key) {
         return repository.existsByKeyAndActiveTrue(key);
-    }
-
-    @Transactional(readOnly = true)
-    public Page<ApiKey> findAll(Pageable pageable) {
-        return repository.findAll(pageable);
     }
 
     @Transactional

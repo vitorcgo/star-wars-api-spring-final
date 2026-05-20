@@ -5,13 +5,8 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,20 +17,17 @@ import java.util.Map;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
-@Tag(name = "API Keys", description = "Geração e gerenciamento de chaves de API para autenticação. " +
-        "Gere uma chave com POST e use no header X-API-Key para acessar endpoints protegidos (POST/PUT/DELETE).")
+@Tag(name = "Autenticacao", description = "Geracao e revogacao de chaves de acesso (API Keys). "
+        + "Gere uma chave com POST e use no header X-API-Key para operacoes de escrita.")
 @RestController
 @RequestMapping("/api/auth/keys")
 public class ApiKeyController {
 
     private final ApiKeyService service;
-    private final PagedResourcesAssembler<ApiKey> pagedAssembler;
 
     @Autowired
-    public ApiKeyController(ApiKeyService service,
-                             PagedResourcesAssembler<ApiKey> pagedAssembler) {
+    public ApiKeyController(ApiKeyService service) {
         this.service = service;
-        this.pagedAssembler = pagedAssembler;
     }
 
     @Operation(summary = "Gera uma nova API Key",
@@ -53,25 +45,9 @@ public class ApiKeyController {
         }
         ApiKey key = service.generateKey(owner);
         EntityModel<ApiKey> model = EntityModel.of(key,
-                linkTo(methodOn(ApiKeyController.class).listKeys(Pageable.unpaged())).withRel("all-keys"),
                 linkTo(methodOn(ApiKeyController.class).revokeKey(key.getId())).withRel("revoke")
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(model);
-    }
-
-    @Operation(summary = "Lista todas as API Keys (paginado)")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Lista de API Keys retornada")
-    })
-    @GetMapping
-    public ResponseEntity<PagedModel<EntityModel<ApiKey>>> listKeys(@ParameterObject Pageable pageable) {
-        Page<ApiKey> page = service.findAll(pageable);
-        PagedModel<EntityModel<ApiKey>> model = pagedAssembler.toModel(page, k ->
-                EntityModel.of(k,
-                        linkTo(methodOn(ApiKeyController.class).revokeKey(k.getId())).withRel("revoke")
-                )
-        );
-        return ResponseEntity.ok(model);
     }
 
     @Operation(summary = "Revoga uma API Key",

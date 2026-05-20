@@ -23,7 +23,8 @@ import senac.tsi.starwars.service.FilmService;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
-@Tag(name = "Films", description = "Gerenciamento de filmes Star Wars")
+@Tag(name = "Films", description = "CRUD de filmes Star Wars. Listagem paginada, busca por ID/diretor/titulo. "
+        + "Cada filme possui relacoes com personagens e naves.")
 @RestController
 @RequestMapping("/api/films")
 public class FilmController {

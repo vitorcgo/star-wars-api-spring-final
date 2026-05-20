@@ -77,13 +77,7 @@ public class ApiKeyFilter extends OncePerRequestFilter {
     }
 
     private boolean isPublicEndpoint(String path, String method) {
-        if (path.equals("/api/auth/keys") && "POST".equalsIgnoreCase(method)) {
-            return true;
-        }
-        if (path.equals("/api/auth/keys") && "GET".equalsIgnoreCase(method)) {
-            return true;
-        }
-        return false;
+        return path.equals("/api/auth/keys") && "POST".equalsIgnoreCase(method);
     }
 
     private void sendError(HttpServletResponse response, HttpStatus status, String message) throws IOException {

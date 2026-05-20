@@ -24,7 +24,8 @@ import senac.tsi.starwars.service.SpeciesService;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
-@Tag(name = "Species", description = "Gerenciamento de espécies Star Wars")
+@Tag(name = "Species", description = "CRUD de especies Star Wars. Listagem paginada, busca por ID/nome/classificacao. "
+        + "Cada especie pode ter um planeta natal associado.")
 @RestController
 @RequestMapping("/api/species")
 public class SpeciesController {

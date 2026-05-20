@@ -24,7 +24,8 @@ import senac.tsi.starwars.service.PlanetService;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
-@Tag(name = "Planets", description = "Gerenciamento de planetas Star Wars")
+@Tag(name = "Planets", description = "CRUD de planetas Star Wars. Listagem paginada, busca por ID/nome/clima. "
+        + "Planetas podem ser mundo natal de personagens e especies.")
 @RestController
 @RequestMapping("/api/planets")
 public class PlanetController {

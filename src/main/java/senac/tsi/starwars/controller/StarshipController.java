@@ -23,7 +23,8 @@ import senac.tsi.starwars.service.StarshipService;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
-@Tag(name = "Starships", description = "Gerenciamento de naves estelares Star Wars")
+@Tag(name = "Starships", description = "CRUD de naves estelares Star Wars. Listagem paginada, busca por ID/nome/classe. "
+        + "Naves podem estar associadas a filmes e personagens.")
 @RestController
 @RequestMapping("/api/starships")
 public class StarshipController {
