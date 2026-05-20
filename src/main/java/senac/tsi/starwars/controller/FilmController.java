@@ -57,6 +57,7 @@ public class FilmController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Filme encontrado",
                     content = @Content(schema = @Schema(implementation = Film.class))),
+            @ApiResponse(responseCode = "400", description = "ID inválido", content = @Content),
             @ApiResponse(responseCode = "404", description = "Filme não encontrado", content = @Content)
     })
     @GetMapping("/{id}")
@@ -74,7 +75,9 @@ public class FilmController {
     @Operation(summary = "Cria um novo filme")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Filme criado"),
-            @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content)
+            @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content),
+            @ApiResponse(responseCode = "401", description = "X-API-Key ausente", content = @Content),
+            @ApiResponse(responseCode = "403", description = "X-API-Key inválida", content = @Content)
     })
     @PostMapping
     public ResponseEntity<EntityModel<Film>> create(@Valid @RequestBody Film film) {
@@ -90,6 +93,9 @@ public class FilmController {
     @Operation(summary = "Atualiza um filme")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Filme atualizado"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content),
+            @ApiResponse(responseCode = "401", description = "X-API-Key ausente", content = @Content),
+            @ApiResponse(responseCode = "403", description = "X-API-Key inválida", content = @Content),
             @ApiResponse(responseCode = "404", description = "Filme não encontrado", content = @Content)
     })
     @PutMapping("/{id}")
@@ -107,7 +113,10 @@ public class FilmController {
     @Operation(summary = "Remove um filme")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Filme removido"),
-            @ApiResponse(responseCode = "404", description = "Filme não encontrado", content = @Content)
+            @ApiResponse(responseCode = "401", description = "X-API-Key ausente", content = @Content),
+            @ApiResponse(responseCode = "403", description = "X-API-Key inválida", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Filme não encontrado", content = @Content),
+            @ApiResponse(responseCode = "409", description = "Conflito — registros dependentes existem", content = @Content)
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {

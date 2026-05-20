@@ -5,41 +5,26 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import senac.tsi.starwars.service.ApiKeyService;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-@Component
-@Order(1)
 public class ApiKeyFilter extends OncePerRequestFilter {
 
     private static final String API_KEY_HEADER = "X-API-Key";
-
     private static final Set<String> PROTECTED_METHODS = Set.of("POST", "PUT", "DELETE");
-
-    private static final Set<String> PUBLIC_PATHS = Set.of(
-            "/api/auth/keys",
-            "/swagger-ui",
-            "/api-docs",
-            "/h2-console",
-            "/v3/api-docs"
-    );
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private final ApiKeyService apiKeyService;
-    private final ObjectMapper objectMapper;
 
-    @Autowired
-    public ApiKeyFilter(ApiKeyService apiKeyService, ObjectMapper objectMapper) {
+    public ApiKeyFilter(ApiKeyService apiKeyService) {
         this.apiKeyService = apiKeyService;
-        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -49,7 +34,22 @@ public class ApiKeyFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
         String method = request.getMethod();
 
-        if ("OPTIONS".equalsIgnoreCase(method) || isPublicPath(path) || !PROTECTED_METHODS.contains(method.toUpperCase())) {
+        if ("OPTIONS".equalsIgnoreCase(method)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        if (isExcludedPath(path)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        if (isPublicEndpoint(path, method)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        if (!PROTECTED_METHODS.contains(method.toUpperCase())) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -69,18 +69,30 @@ public class ApiKeyFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private boolean isPublicPath(String path) {
-        return PUBLIC_PATHS.stream().anyMatch(path::startsWith);
+    private boolean isExcludedPath(String path) {
+        return path.startsWith("/swagger-ui") ||
+               path.startsWith("/api-docs") ||
+               path.startsWith("/v3/api-docs") ||
+               path.startsWith("/h2-console");
+    }
+
+    private boolean isPublicEndpoint(String path, String method) {
+        if (path.equals("/api/auth/keys") && "POST".equalsIgnoreCase(method)) {
+            return true;
+        }
+        if (path.equals("/api/auth/keys") && "GET".equalsIgnoreCase(method)) {
+            return true;
+        }
+        return false;
     }
 
     private void sendError(HttpServletResponse response, HttpStatus status, String message) throws IOException {
         response.setStatus(status.value());
         response.setContentType("application/json;charset=UTF-8");
-        Map<String, Object> body = Map.of(
-                "timestamp", LocalDateTime.now().toString(),
-                "status", status.value(),
-                "mensagem", message
-        );
-        response.getWriter().write(objectMapper.writeValueAsString(body));
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDateTime.now().toString());
+        body.put("status", status.value());
+        body.put("mensagem", message);
+        response.getWriter().write(MAPPER.writeValueAsString(body));
     }
 }

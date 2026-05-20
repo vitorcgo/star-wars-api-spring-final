@@ -18,7 +18,7 @@ public class CorsConfig {
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .exposedHeaders("X-RateLimit-Limit", "X-RateLimit-Remaining", "Retry-After",
-                                "X-Idempotency-Key", "X-API-Version")
+                                "X-Idempotency-Key", "X-Idempotency-Replayed", "X-API-Version")
                         .allowCredentials(true)
                         .maxAge(3600);
             }

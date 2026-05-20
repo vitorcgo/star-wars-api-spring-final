@@ -57,6 +57,7 @@ public class StarshipController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Nave encontrada",
                     content = @Content(schema = @Schema(implementation = Starship.class))),
+            @ApiResponse(responseCode = "400", description = "ID inválido", content = @Content),
             @ApiResponse(responseCode = "404", description = "Nave não encontrada", content = @Content)
     })
     @GetMapping("/{id}")
@@ -74,7 +75,9 @@ public class StarshipController {
     @Operation(summary = "Cria uma nova nave estelar")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Nave criada"),
-            @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content)
+            @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content),
+            @ApiResponse(responseCode = "401", description = "X-API-Key ausente", content = @Content),
+            @ApiResponse(responseCode = "403", description = "X-API-Key inválida", content = @Content)
     })
     @PostMapping
     public ResponseEntity<EntityModel<Starship>> create(@Valid @RequestBody Starship starship) {
@@ -90,6 +93,9 @@ public class StarshipController {
     @Operation(summary = "Atualiza uma nave estelar")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Nave atualizada"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content),
+            @ApiResponse(responseCode = "401", description = "X-API-Key ausente", content = @Content),
+            @ApiResponse(responseCode = "403", description = "X-API-Key inválida", content = @Content),
             @ApiResponse(responseCode = "404", description = "Nave não encontrada", content = @Content)
     })
     @PutMapping("/{id}")
@@ -107,7 +113,10 @@ public class StarshipController {
     @Operation(summary = "Remove uma nave estelar")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Nave removida"),
-            @ApiResponse(responseCode = "404", description = "Nave não encontrada", content = @Content)
+            @ApiResponse(responseCode = "401", description = "X-API-Key ausente", content = @Content),
+            @ApiResponse(responseCode = "403", description = "X-API-Key inválida", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Nave não encontrada", content = @Content),
+            @ApiResponse(responseCode = "409", description = "Conflito — registros dependentes existem", content = @Content)
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {

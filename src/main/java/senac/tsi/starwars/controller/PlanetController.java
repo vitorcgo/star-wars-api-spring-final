@@ -39,10 +39,8 @@ public class PlanetController {
         this.pagedAssembler = pagedAssembler;
     }
 
-    @Operation(summary = "Lista todos os planetas", description = "Retorna lista paginada de planetas com links HATEOAS")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso")
-    })
+    @Operation(summary = "Lista todos os planetas (paginado)")
+    @ApiResponses({@ApiResponse(responseCode = "200", description = "Lista retornada")})
     @GetMapping
     public ResponseEntity<PagedModel<EntityModel<Planet>>> getAll(@ParameterObject Pageable pageable) {
         Page<Planet> page = service.findAll(pageable);
@@ -60,6 +58,7 @@ public class PlanetController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Planeta encontrado",
                     content = @Content(schema = @Schema(implementation = Planet.class))),
+            @ApiResponse(responseCode = "400", description = "ID inválido", content = @Content),
             @ApiResponse(responseCode = "404", description = "Planeta não encontrado", content = @Content)
     })
     @GetMapping("/{id}")
@@ -76,8 +75,10 @@ public class PlanetController {
 
     @Operation(summary = "Cria um novo planeta")
     @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "Planeta criado com sucesso"),
-            @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content)
+            @ApiResponse(responseCode = "201", description = "Planeta criado"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content),
+            @ApiResponse(responseCode = "401", description = "X-API-Key ausente", content = @Content),
+            @ApiResponse(responseCode = "403", description = "X-API-Key inválida", content = @Content)
     })
     @PostMapping
     public ResponseEntity<EntityModel<Planet>> create(@Valid @RequestBody Planet planet) {
@@ -93,6 +94,9 @@ public class PlanetController {
     @Operation(summary = "Atualiza um planeta existente")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Planeta atualizado"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content),
+            @ApiResponse(responseCode = "401", description = "X-API-Key ausente", content = @Content),
+            @ApiResponse(responseCode = "403", description = "X-API-Key inválida", content = @Content),
             @ApiResponse(responseCode = "404", description = "Planeta não encontrado", content = @Content)
     })
     @PutMapping("/{id}")
@@ -110,7 +114,10 @@ public class PlanetController {
     @Operation(summary = "Remove um planeta")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Planeta removido"),
-            @ApiResponse(responseCode = "404", description = "Planeta não encontrado", content = @Content)
+            @ApiResponse(responseCode = "401", description = "X-API-Key ausente", content = @Content),
+            @ApiResponse(responseCode = "403", description = "X-API-Key inválida", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Planeta não encontrado", content = @Content),
+            @ApiResponse(responseCode = "409", description = "Conflito — registros dependentes existem", content = @Content)
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
@@ -119,9 +126,10 @@ public class PlanetController {
     }
 
     @Operation(summary = "Busca planetas por clima",
-            description = "Filtra planetas pelo clima (enum). Valores possíveis: ARID, TEMPERATE, TROPICAL, FROZEN, MURKY, HOT, WINDY, POLLUTED, SUBARCTIC, SUPERHEATED, ARTIFICIAL, UNKNOWN")
+            description = "Valores possíveis: ARID, TEMPERATE, TROPICAL, FROZEN, MURKY, HOT, WINDY, POLLUTED, SUBARCTIC, SUPERHEATED, ARTIFICIAL, UNKNOWN")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Resultado da busca")
+            @ApiResponse(responseCode = "200", description = "Resultado da busca"),
+            @ApiResponse(responseCode = "400", description = "Valor de clima inválido", content = @Content)
     })
     @GetMapping("/search/by-climate")
     public ResponseEntity<PagedModel<EntityModel<Planet>>> findByClimate(
@@ -134,7 +142,7 @@ public class PlanetController {
         ));
     }
 
-    @Operation(summary = "Busca planetas por nome (busca parcial)")
+    @Operation(summary = "Busca planetas por nome (parcial)")
     @GetMapping("/search/by-name")
     public ResponseEntity<PagedModel<EntityModel<Planet>>> findByName(
             @Parameter(description = "Trecho do nome") @RequestParam String name,

@@ -58,6 +58,7 @@ public class SpeciesController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Espécie encontrada",
                     content = @Content(schema = @Schema(implementation = Species.class))),
+            @ApiResponse(responseCode = "400", description = "ID inválido", content = @Content),
             @ApiResponse(responseCode = "404", description = "Espécie não encontrada", content = @Content)
     })
     @GetMapping("/{id}")
@@ -75,7 +76,9 @@ public class SpeciesController {
     @Operation(summary = "Cria uma nova espécie")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Espécie criada"),
-            @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content)
+            @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content),
+            @ApiResponse(responseCode = "401", description = "X-API-Key ausente", content = @Content),
+            @ApiResponse(responseCode = "403", description = "X-API-Key inválida", content = @Content)
     })
     @PostMapping
     public ResponseEntity<EntityModel<Species>> create(@Valid @RequestBody Species species) {
@@ -91,6 +94,9 @@ public class SpeciesController {
     @Operation(summary = "Atualiza uma espécie")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Espécie atualizada"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content),
+            @ApiResponse(responseCode = "401", description = "X-API-Key ausente", content = @Content),
+            @ApiResponse(responseCode = "403", description = "X-API-Key inválida", content = @Content),
             @ApiResponse(responseCode = "404", description = "Espécie não encontrada", content = @Content)
     })
     @PutMapping("/{id}")
@@ -108,7 +114,10 @@ public class SpeciesController {
     @Operation(summary = "Remove uma espécie")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Espécie removida"),
-            @ApiResponse(responseCode = "404", description = "Espécie não encontrada", content = @Content)
+            @ApiResponse(responseCode = "401", description = "X-API-Key ausente", content = @Content),
+            @ApiResponse(responseCode = "403", description = "X-API-Key inválida", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Espécie não encontrada", content = @Content),
+            @ApiResponse(responseCode = "409", description = "Conflito — registros dependentes existem", content = @Content)
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
@@ -118,6 +127,10 @@ public class SpeciesController {
 
     @Operation(summary = "Busca espécies por classificação biológica",
             description = "Valores possíveis: MAMMAL, REPTILE, AMPHIBIAN, ARTIFICIAL, INSECTOID, GASTROPOD, SENTIENT, UNKNOWN")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Resultado da busca"),
+            @ApiResponse(responseCode = "400", description = "Valor de classificação inválido", content = @Content)
+    })
     @GetMapping("/search/by-classification")
     public ResponseEntity<PagedModel<EntityModel<Species>>> findByClassification(
             @Parameter(description = "Classificação biológica") @RequestParam SpeciesClassification classification,

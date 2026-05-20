@@ -4,9 +4,6 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.annotation.Order;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.ContentCachingResponseWrapper;
 import senac.tsi.starwars.model.IdempotencyRecord;
@@ -16,15 +13,12 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
-@Component
-@Order(3)
 public class IdempotencyFilter extends OncePerRequestFilter {
 
     private static final String IDEMPOTENCY_HEADER = "X-Idempotency-Key";
 
     private final IdempotencyRecordRepository repository;
 
-    @Autowired
     public IdempotencyFilter(IdempotencyRecordRepository repository) {
         this.repository = repository;
     }
@@ -72,7 +66,6 @@ public class IdempotencyFilter extends OncePerRequestFilter {
         try {
             repository.save(record);
         } catch (Exception ignored) {
-            // Key duplicada por race condition — sem problema, resposta já foi enviada
         }
 
         wrappedResponse.copyBodyToResponse();

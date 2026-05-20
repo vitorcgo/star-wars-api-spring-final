@@ -5,43 +5,27 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
-@Component
-@Order(0)
 public class RateLimitFilter extends OncePerRequestFilter {
 
     private static final int MAX_REQUESTS = 20;
     private static final long WINDOW_MS = 60_000;
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private final ConcurrentHashMap<String, ConcurrentLinkedDeque<Long>> requestCounts = new ConcurrentHashMap<>();
-    private final ObjectMapper objectMapper;
-
-    @Autowired
-    public RateLimitFilter(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-
-        String path = request.getRequestURI();
-        if (path.startsWith("/swagger-ui") || path.startsWith("/api-docs") ||
-                path.startsWith("/v3/api-docs") || path.startsWith("/h2-console")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
 
         String clientIp = getClientIp(request);
         long now = System.currentTimeMillis();
@@ -66,12 +50,11 @@ public class RateLimitFilter extends OncePerRequestFilter {
             response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
             response.setContentType("application/json;charset=UTF-8");
 
-            Map<String, Object> body = Map.of(
-                    "timestamp", LocalDateTime.now().toString(),
-                    "status", 429,
-                    "mensagem", "Limite de requisições excedido. Tente novamente em " + retryAfterSeconds + " segundos."
-            );
-            response.getWriter().write(objectMapper.writeValueAsString(body));
+            Map<String, Object> body = new LinkedHashMap<>();
+            body.put("timestamp", LocalDateTime.now().toString());
+            body.put("status", 429);
+            body.put("mensagem", "Limite de requisições excedido. Tente novamente em " + retryAfterSeconds + " segundos.");
+            response.getWriter().write(MAPPER.writeValueAsString(body));
             return;
         }
 

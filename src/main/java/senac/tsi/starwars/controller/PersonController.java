@@ -57,6 +57,7 @@ public class PersonController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Personagem encontrado",
                     content = @Content(schema = @Schema(implementation = Person.class))),
+            @ApiResponse(responseCode = "400", description = "ID inválido", content = @Content),
             @ApiResponse(responseCode = "404", description = "Personagem não encontrado", content = @Content)
     })
     @GetMapping("/{id}")
@@ -74,7 +75,9 @@ public class PersonController {
     @Operation(summary = "Cria um novo personagem")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Personagem criado"),
-            @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content)
+            @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content),
+            @ApiResponse(responseCode = "401", description = "X-API-Key ausente", content = @Content),
+            @ApiResponse(responseCode = "403", description = "X-API-Key inválida", content = @Content)
     })
     @PostMapping
     public ResponseEntity<EntityModel<Person>> create(@Valid @RequestBody Person person) {
@@ -90,6 +93,9 @@ public class PersonController {
     @Operation(summary = "Atualiza um personagem")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Personagem atualizado"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content),
+            @ApiResponse(responseCode = "401", description = "X-API-Key ausente", content = @Content),
+            @ApiResponse(responseCode = "403", description = "X-API-Key inválida", content = @Content),
             @ApiResponse(responseCode = "404", description = "Personagem não encontrado", content = @Content)
     })
     @PutMapping("/{id}")
@@ -107,7 +113,10 @@ public class PersonController {
     @Operation(summary = "Remove um personagem")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Personagem removido"),
-            @ApiResponse(responseCode = "404", description = "Personagem não encontrado", content = @Content)
+            @ApiResponse(responseCode = "401", description = "X-API-Key ausente", content = @Content),
+            @ApiResponse(responseCode = "403", description = "X-API-Key inválida", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Personagem não encontrado", content = @Content),
+            @ApiResponse(responseCode = "409", description = "Conflito — registros dependentes existem", content = @Content)
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
