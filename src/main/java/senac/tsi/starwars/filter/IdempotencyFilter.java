@@ -47,6 +47,14 @@ public class IdempotencyFilter extends OncePerRequestFilter {
 
         if (existing.isPresent()) {
             IdempotencyRecord record = existing.get();
+            if (!request.getRequestURI().equals(record.getRequestPath())) {
+                response.setStatus(409);
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write("""
+                        {"timestamp":"%s","status":409,"mensagem":"X-Idempotency-Key ja usado em outra rota."}
+                        """.formatted(java.time.LocalDateTime.now()));
+                return;
+            }
             response.setStatus(record.getResponseStatus());
             response.setContentType("application/json;charset=UTF-8");
             response.setHeader("X-Idempotency-Replayed", "true");

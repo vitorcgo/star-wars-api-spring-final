@@ -118,19 +118,19 @@ public class SwapiDataLoaderService implements CommandLineRunner {
                         planetUrlToId.put(dto.getUrl(), planet.getId());
                     }
                 } catch (Exception e) {
-                    log.error("Erro ao salvar planeta '{}': {}", dto.getName(), e.getMessage());
+                    log.error("Erro ao salvar planeta '{}'", dto.getName(), e);
                 }
             }
             log.info("{} planetas carregados com sucesso.", dtos.length);
 
         } catch (HttpClientErrorException.NotFound e) {
             // TRATAMENTO CRÍTICO: 404 — endpoint não encontrado
-            log.error("404: Endpoint /planets/ não encontrado na SWAPI.");
+            log.error("404: Endpoint /planets/ não encontrado na SWAPI.", e);
         } catch (HttpServerErrorException e) {
             // TRATAMENTO CRÍTICO: 5xx — erro no servidor da SWAPI
-            log.error("Erro 5xx ao carregar planetas: {}", e.getMessage());
+            log.error("Erro 5xx ao carregar planetas", e);
         } catch (Exception e) {
-            log.error("Erro inesperado ao carregar planetas: {}", e.getMessage());
+            log.error("Erro inesperado ao carregar planetas", e);
         }
     }
 
@@ -177,17 +177,17 @@ public class SwapiDataLoaderService implements CommandLineRunner {
                         speciesUrlToId.put(dto.getUrl(), saved.getId());
                     }
                 } catch (Exception e) {
-                    log.error("Erro ao salvar espécie '{}': {}", dto.getName(), e.getMessage());
+                    log.error("Erro ao salvar espécie '{}'", dto.getName(), e);
                 }
             }
             log.info("{} espécies carregadas com sucesso.", dtos.length);
 
         } catch (HttpClientErrorException.NotFound e) {
-            log.error("404: Endpoint /species/ não encontrado na SWAPI.");
+            log.error("404: Endpoint /species/ não encontrado na SWAPI.", e);
         } catch (HttpServerErrorException e) {
-            log.error("Erro 5xx ao carregar espécies: {}", e.getMessage());
+            log.error("Erro 5xx ao carregar espécies", e);
         } catch (Exception e) {
-            log.error("Erro inesperado ao carregar espécies: {}", e.getMessage());
+            log.error("Erro inesperado ao carregar espécies", e);
         }
     }
 
@@ -226,17 +226,17 @@ public class SwapiDataLoaderService implements CommandLineRunner {
                         starshipUrlToId.put(dto.getUrl(), saved.getId());
                     }
                 } catch (Exception e) {
-                    log.error("Erro ao salvar nave '{}': {}", dto.getName(), e.getMessage());
+                    log.error("Erro ao salvar nave '{}'", dto.getName(), e);
                 }
             }
             log.info("{} naves carregadas com sucesso.", dtos.length);
 
         } catch (HttpClientErrorException.NotFound e) {
-            log.error("404: Endpoint /starships/ não encontrado na SWAPI.");
+            log.error("404: Endpoint /starships/ não encontrado na SWAPI.", e);
         } catch (HttpServerErrorException e) {
-            log.error("Erro 5xx ao carregar naves: {}", e.getMessage());
+            log.error("Erro 5xx ao carregar naves", e);
         } catch (Exception e) {
-            log.error("Erro inesperado ao carregar naves: {}", e.getMessage());
+            log.error("Erro inesperado ao carregar naves", e);
         }
     }
 
@@ -302,17 +302,17 @@ public class SwapiDataLoaderService implements CommandLineRunner {
                         personUrlToId.put(dto.getUrl(), saved.getId());
                     }
                 } catch (Exception e) {
-                    log.error("Erro ao salvar personagem '{}': {}", dto.getName(), e.getMessage());
+                    log.error("Erro ao salvar personagem '{}'", dto.getName(), e);
                 }
             }
             log.info("{} personagens carregados com sucesso.", dtos.length);
 
         } catch (HttpClientErrorException.NotFound e) {
-            log.error("404: Endpoint /people/ não encontrado na SWAPI.");
+            log.error("404: Endpoint /people/ não encontrado na SWAPI.", e);
         } catch (HttpServerErrorException e) {
-            log.error("Erro 5xx ao carregar personagens: {}", e.getMessage());
+            log.error("Erro 5xx ao carregar personagens", e);
         } catch (Exception e) {
-            log.error("Erro inesperado ao carregar personagens: {}", e.getMessage());
+            log.error("Erro inesperado ao carregar personagens", e);
         }
     }
 
@@ -368,17 +368,17 @@ public class SwapiDataLoaderService implements CommandLineRunner {
 
                     filmRepository.save(film);
                 } catch (Exception e) {
-                    log.error("Erro ao salvar filme '{}': {}", dto.getTitle(), e.getMessage());
+                    log.error("Erro ao salvar filme '{}'", dto.getTitle(), e);
                 }
             }
             log.info("{} filmes carregados com sucesso.", dtos.length);
 
         } catch (HttpClientErrorException.NotFound e) {
-            log.error("404: Endpoint /films/ não encontrado na SWAPI.");
+            log.error("404: Endpoint /films/ não encontrado na SWAPI.", e);
         } catch (HttpServerErrorException e) {
-            log.error("Erro 5xx ao carregar filmes: {}", e.getMessage());
+            log.error("Erro 5xx ao carregar filmes", e);
         } catch (Exception e) {
-            log.error("Erro inesperado ao carregar filmes: {}", e.getMessage());
+            log.error("Erro inesperado ao carregar filmes", e);
         }
     }
 
