@@ -5,9 +5,12 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(exclude = {"planet", "species", "primaryShip"})
+@EqualsAndHashCode(exclude = {"planet", "species", "primaryShip"})
 @Entity
 @Table(name = "persons")
 public class Person {
@@ -27,27 +30,14 @@ public class Person {
     private String mass;
     private String swapiUrl;
 
-    /**
-     * Relacionamento @ManyToOne → @OneToMany com Planet.
-     * Muitos personagens podem ser do mesmo planeta.
-     */
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "planet_id")
     private Planet planet;
 
-    /**
-     * Relacionamento @ManyToOne com Species.
-     * Muitos personagens pertencem à mesma espécie.
-     */
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "species_id")
     private Species species;
 
-    /**
-     * Relacionamento @OneToOne com Starship.
-     * Cada personagem tem, no máximo, uma nave principal.
-     * A constraint unique=true garante que cada nave só tem um piloto principal.
-     */
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "primary_ship_id", unique = true)
     private Starship primaryShip;

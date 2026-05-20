@@ -44,6 +44,8 @@ public class FilmService {
         film.setProducer(details.getProducer());
         film.setReleaseDate(details.getReleaseDate());
         film.setOpeningCrawl(details.getOpeningCrawl());
+        film.setCharacters(details.getCharacters());
+        film.setStarships(details.getStarships());
         return repository.save(film);
     }
 

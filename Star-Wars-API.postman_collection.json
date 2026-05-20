@@ -1,0 +1,758 @@
+{
+	"info": {
+		"name": "Star Wars SWAPI - API REST",
+		"description": "Coleção completa da API Star Wars com autenticação, rate limiting, idempotência e versionamento.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080"
+		},
+		{
+			"key": "apiKey",
+			"value": "COLE_SUA_API_KEY_AQUI"
+		}
+	],
+	"item": [
+		{
+			"name": "Auth - API Keys",
+			"item": [
+				{
+					"name": "Gerar API Key",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"owner\": \"aluno-teste\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/keys",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "keys"]
+						}
+					}
+				},
+				{
+					"name": "Listar API Keys",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/keys",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "keys"]
+						}
+					}
+				},
+				{
+					"name": "Revogar API Key",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{"key": "X-API-Key", "value": "{{apiKey}}"}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/keys/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "keys", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Films",
+			"item": [
+				{
+					"name": "Listar Filmes (paginado)",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/films?page=0&size=5",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "films"],
+							"query": [
+								{"key": "page", "value": "0"},
+								{"key": "size", "value": "5"}
+							]
+						}
+					}
+				},
+				{
+					"name": "Buscar Filme por ID",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/films/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "films", "1"]
+						}
+					}
+				},
+				{
+					"name": "Criar Filme",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "X-API-Key", "value": "{{apiKey}}"},
+							{"key": "X-Idempotency-Key", "value": "film-create-001"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Star Wars: Episódio X\",\n  \"episodeId\": 10,\n  \"director\": \"Novo Diretor\",\n  \"producer\": \"Lucasfilm\",\n  \"releaseDate\": \"2026-12-25\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/films",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "films"]
+						}
+					}
+				},
+				{
+					"name": "Atualizar Filme",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "X-API-Key", "value": "{{apiKey}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Star Wars: Episódio X (Revisado)\",\n  \"episodeId\": 10,\n  \"director\": \"Diretor Atualizado\",\n  \"producer\": \"Lucasfilm\",\n  \"releaseDate\": \"2027-05-25\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/films/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "films", "1"]
+						}
+					}
+				},
+				{
+					"name": "Deletar Filme",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{"key": "X-API-Key", "value": "{{apiKey}}"}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/films/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "films", "1"]
+						}
+					}
+				},
+				{
+					"name": "Buscar por Diretor",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/films/search/by-director?director=George&page=0&size=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "films", "search", "by-director"],
+							"query": [
+								{"key": "director", "value": "George"},
+								{"key": "page", "value": "0"},
+								{"key": "size", "value": "10"}
+							]
+						}
+					}
+				},
+				{
+					"name": "Buscar por Título",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/films/search/by-title?title=Hope&page=0&size=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "films", "search", "by-title"],
+							"query": [
+								{"key": "title", "value": "Hope"},
+								{"key": "page", "value": "0"},
+								{"key": "size", "value": "10"}
+							]
+						}
+					}
+				},
+				{
+					"name": "Listar Filmes V2 (resumido)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "X-API-Version", "value": "2"}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/films?page=0&size=5",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "films"],
+							"query": [
+								{"key": "page", "value": "0"},
+								{"key": "size", "value": "5"}
+							]
+						}
+					}
+				},
+				{
+					"name": "Buscar Filme V2 por ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "X-API-Version", "value": "2"}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/films/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "films", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "People",
+			"item": [
+				{
+					"name": "Listar Personagens (paginado)",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/people?page=0&size=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "people"],
+							"query": [
+								{"key": "page", "value": "0"},
+								{"key": "size", "value": "10"}
+							]
+						}
+					}
+				},
+				{
+					"name": "Buscar Personagem por ID",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/people/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "people", "1"]
+						}
+					}
+				},
+				{
+					"name": "Criar Personagem",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "X-API-Key", "value": "{{apiKey}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Ahsoka Tano\",\n  \"birthYear\": \"36BBY\",\n  \"gender\": \"female\",\n  \"height\": \"170\",\n  \"mass\": \"unknown\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/people",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "people"]
+						}
+					}
+				},
+				{
+					"name": "Atualizar Personagem",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "X-API-Key", "value": "{{apiKey}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Ahsoka Tano (atualizado)\",\n  \"birthYear\": \"36BBY\",\n  \"gender\": \"female\",\n  \"height\": \"170\",\n  \"mass\": \"56\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/people/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "people", "1"]
+						}
+					}
+				},
+				{
+					"name": "Deletar Personagem",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{"key": "X-API-Key", "value": "{{apiKey}}"}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/people/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "people", "1"]
+						}
+					}
+				},
+				{
+					"name": "Buscar por Gênero",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/people/search/by-gender?gender=male&page=0&size=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "people", "search", "by-gender"],
+							"query": [
+								{"key": "gender", "value": "male"},
+								{"key": "page", "value": "0"},
+								{"key": "size", "value": "10"}
+							]
+						}
+					}
+				},
+				{
+					"name": "Buscar por Nome",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/people/search/by-name?name=Luke&page=0&size=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "people", "search", "by-name"],
+							"query": [
+								{"key": "name", "value": "Luke"},
+								{"key": "page", "value": "0"},
+								{"key": "size", "value": "10"}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Planets",
+			"item": [
+				{
+					"name": "Listar Planetas (paginado)",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/planets?page=0&size=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "planets"],
+							"query": [
+								{"key": "page", "value": "0"},
+								{"key": "size", "value": "10"}
+							]
+						}
+					}
+				},
+				{
+					"name": "Buscar Planeta por ID",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/planets/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "planets", "1"]
+						}
+					}
+				},
+				{
+					"name": "Criar Planeta",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "X-API-Key", "value": "{{apiKey}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Mustafar\",\n  \"climate\": \"HOT\",\n  \"terrain\": \"volcanoes, lava rivers\",\n  \"population\": \"20000\",\n  \"diameter\": \"4200\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/planets",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "planets"]
+						}
+					}
+				},
+				{
+					"name": "Atualizar Planeta",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "X-API-Key", "value": "{{apiKey}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Mustafar (atualizado)\",\n  \"climate\": \"SUPERHEATED\",\n  \"terrain\": \"volcanoes\",\n  \"population\": \"10000\",\n  \"diameter\": \"4200\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/planets/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "planets", "1"]
+						}
+					}
+				},
+				{
+					"name": "Deletar Planeta",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{"key": "X-API-Key", "value": "{{apiKey}}"}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/planets/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "planets", "1"]
+						}
+					}
+				},
+				{
+					"name": "Buscar por Clima",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/planets/search/by-climate?climate=ARID&page=0&size=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "planets", "search", "by-climate"],
+							"query": [
+								{"key": "climate", "value": "ARID"},
+								{"key": "page", "value": "0"},
+								{"key": "size", "value": "10"}
+							]
+						}
+					}
+				},
+				{
+					"name": "Buscar por Nome",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/planets/search/by-name?name=Tatooine&page=0&size=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "planets", "search", "by-name"],
+							"query": [
+								{"key": "name", "value": "Tatooine"},
+								{"key": "page", "value": "0"},
+								{"key": "size", "value": "10"}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Species",
+			"item": [
+				{
+					"name": "Listar Espécies (paginado)",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/species?page=0&size=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "species"],
+							"query": [
+								{"key": "page", "value": "0"},
+								{"key": "size", "value": "10"}
+							]
+						}
+					}
+				},
+				{
+					"name": "Buscar Espécie por ID",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/species/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "species", "1"]
+						}
+					}
+				},
+				{
+					"name": "Criar Espécie",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "X-API-Key", "value": "{{apiKey}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Togruta\",\n  \"classification\": \"MAMMAL\",\n  \"language\": \"Togruti\",\n  \"averageHeight\": \"170\",\n  \"averageLifespan\": \"94\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/species",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "species"]
+						}
+					}
+				},
+				{
+					"name": "Atualizar Espécie",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "X-API-Key", "value": "{{apiKey}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Togruta (atualizado)\",\n  \"classification\": \"MAMMAL\",\n  \"language\": \"Togruti\",\n  \"averageHeight\": \"175\",\n  \"averageLifespan\": \"94\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/species/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "species", "1"]
+						}
+					}
+				},
+				{
+					"name": "Deletar Espécie",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{"key": "X-API-Key", "value": "{{apiKey}}"}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/species/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "species", "1"]
+						}
+					}
+				},
+				{
+					"name": "Buscar por Classificação",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/species/search/by-classification?classification=MAMMAL&page=0&size=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "species", "search", "by-classification"],
+							"query": [
+								{"key": "classification", "value": "MAMMAL"},
+								{"key": "page", "value": "0"},
+								{"key": "size", "value": "10"}
+							]
+						}
+					}
+				},
+				{
+					"name": "Buscar por Nome",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/species/search/by-name?name=Human&page=0&size=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "species", "search", "by-name"],
+							"query": [
+								{"key": "name", "value": "Human"},
+								{"key": "page", "value": "0"},
+								{"key": "size", "value": "10"}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Starships",
+			"item": [
+				{
+					"name": "Listar Naves (paginado)",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/starships?page=0&size=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "starships"],
+							"query": [
+								{"key": "page", "value": "0"},
+								{"key": "size", "value": "10"}
+							]
+						}
+					}
+				},
+				{
+					"name": "Buscar Nave por ID",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/starships/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "starships", "1"]
+						}
+					}
+				},
+				{
+					"name": "Criar Nave",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "X-API-Key", "value": "{{apiKey}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Ghost\",\n  \"model\": \"VCX-100 light freighter\",\n  \"manufacturer\": \"Corellian Engineering\",\n  \"costInCredits\": \"unknown\",\n  \"length\": \"43.9\",\n  \"crew\": \"2\",\n  \"passengers\": \"6\",\n  \"starshipClass\": \"Light freighter\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/starships",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "starships"]
+						}
+					}
+				},
+				{
+					"name": "Atualizar Nave",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "X-API-Key", "value": "{{apiKey}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Ghost (modificado)\",\n  \"model\": \"VCX-100 light freighter\",\n  \"manufacturer\": \"Corellian Engineering\",\n  \"costInCredits\": \"unknown\",\n  \"length\": \"43.9\",\n  \"crew\": \"3\",\n  \"passengers\": \"8\",\n  \"starshipClass\": \"Light freighter\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/starships/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "starships", "1"]
+						}
+					}
+				},
+				{
+					"name": "Deletar Nave",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{"key": "X-API-Key", "value": "{{apiKey}}"}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/starships/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "starships", "1"]
+						}
+					}
+				},
+				{
+					"name": "Buscar por Classe",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/starships/search/by-class?starshipClass=Starfighter&page=0&size=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "starships", "search", "by-class"],
+							"query": [
+								{"key": "starshipClass", "value": "Starfighter"},
+								{"key": "page", "value": "0"},
+								{"key": "size", "value": "10"}
+							]
+						}
+					}
+				},
+				{
+					"name": "Buscar por Nome",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/starships/search/by-name?name=Falcon&page=0&size=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "starships", "search", "by-name"],
+							"query": [
+								{"key": "name", "value": "Falcon"},
+								{"key": "page", "value": "0"},
+								{"key": "size", "value": "10"}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Testes Especiais",
+			"item": [
+				{
+					"name": "Teste Rate Limit (repetir rápido)",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/planets?page=0&size=1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "planets"],
+							"query": [
+								{"key": "page", "value": "0"},
+								{"key": "size", "value": "1"}
+							]
+						}
+					}
+				},
+				{
+					"name": "Teste Enum Inválido (deve retornar 400)",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/planets/search/by-climate?climate=INVALIDO",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "planets", "search", "by-climate"],
+							"query": [
+								{"key": "climate", "value": "INVALIDO"}
+							]
+						}
+					}
+				},
+				{
+					"name": "Teste ID Inválido (deve retornar 400)",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/films/abc",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "films", "abc"]
+						}
+					}
+				},
+				{
+					"name": "Teste Sem API Key (deve retornar 401)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Teste\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/planets",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "planets"]
+						}
+					}
+				},
+				{
+					"name": "Teste Idempotência (repetir 2x)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "X-API-Key", "value": "{{apiKey}}"},
+							{"key": "X-Idempotency-Key", "value": "teste-idem-001"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Planeta Teste Idempotência\",\n  \"climate\": \"TEMPERATE\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/planets",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "planets"]
+						}
+					}
+				}
+			]
+		}
+	]
+}

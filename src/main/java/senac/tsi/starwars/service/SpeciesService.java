@@ -44,6 +44,7 @@ public class SpeciesService {
         species.setLanguage(details.getLanguage());
         species.setAverageHeight(details.getAverageHeight());
         species.setAverageLifespan(details.getAverageLifespan());
+        species.setHomeworld(details.getHomeworld());
         return repository.save(species);
     }
 

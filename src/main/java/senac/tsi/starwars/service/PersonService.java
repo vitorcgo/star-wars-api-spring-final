@@ -43,6 +43,9 @@ public class PersonService {
         person.setGender(details.getGender());
         person.setHeight(details.getHeight());
         person.setMass(details.getMass());
+        person.setPlanet(details.getPlanet());
+        person.setSpecies(details.getSpecies());
+        person.setPrimaryShip(details.getPrimaryShip());
         return repository.save(person);
     }
 

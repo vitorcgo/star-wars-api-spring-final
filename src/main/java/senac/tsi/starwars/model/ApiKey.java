@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -12,31 +14,24 @@ import lombok.*;
 @ToString
 @EqualsAndHashCode
 @Entity
-@Table(name = "starships")
-public class Starship {
+@Table(name = "api_keys")
+public class ApiKey {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "Nome é obrigatório")
+    @NotBlank(message = "Nome do proprietário é obrigatório")
     @Size(max = 200, message = "Nome deve ter no máximo 200 caracteres")
     @Column(nullable = false)
-    private String name;
+    private String owner;
 
-    @Size(max = 200)
-    private String model;
+    @Column(name = "api_key", nullable = false, unique = true, length = 64)
+    private String key;
 
-    @Size(max = 300)
-    private String manufacturer;
+    @Column(nullable = false)
+    private boolean active = true;
 
-    private String costInCredits;
-    private String length;
-    private String crew;
-    private String passengers;
-
-    @Size(max = 200)
-    private String starshipClass;
-
-    private String swapiUrl;
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
 }
