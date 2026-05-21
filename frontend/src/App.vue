@@ -4,9 +4,12 @@ import {
   Activity,
   ChevronLeft,
   ChevronRight,
+  CheckCircle2,
   CircleAlert,
+  Clock3,
   Database,
   FileKey2,
+  Info,
   KeyRound,
   Layers3,
   ListFilter,
@@ -41,6 +44,7 @@ const pageInfo = ref({ number: 0, totalPages: 1, totalElements: 0 });
 const loading = ref(false);
 const errorMessage = ref('');
 const latestCreatedKey = ref(null);
+const activityLog = ref([]);
 const relationOptions = reactive({ planets: [], people: [], species: [], starships: [] });
 const form = reactive({});
 
@@ -93,6 +97,14 @@ const metrics = computed(() => [
   { label: 'Versão', value: activeResource.value === 'films' ? `V${filmVersion.value}` : 'V1', tone: 'neutral' }
 ]);
 
+const latestActivity = computed(() => activityLog.value[0] || null);
+const formHint = computed(() => {
+  if (isFilmV2.value) return 'A V2 é somente leitura. Volte para V1 para criar, editar ou excluir.';
+  if (!writeReady.value) return 'Informe uma chave de API para salvar, editar ou excluir registros.';
+  if (selected.value?.id) return 'Edite os campos necessários e salve. Campos técnicos e vínculos grandes ficam preservados.';
+  return 'Preencha os campos obrigatórios e crie um novo registro.';
+});
+
 function cloneDefaults(resource) {
   return JSON.parse(JSON.stringify(resourceConfigs[resource].defaults));
 }
@@ -118,6 +130,23 @@ function syncForm(resource, source) {
 function persistConnection() {
   localStorage.setItem('api-base-url', apiBaseUrl.value);
   localStorage.setItem('api-key', apiKey.value);
+}
+
+function pushActivity(type, title, detail = '') {
+  activityLog.value.unshift({
+    id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+    type,
+    title,
+    detail,
+    time: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+  });
+  activityLog.value = activityLog.value.slice(0, 6);
+}
+
+function showError(error, fallback = 'Erro inesperado.') {
+  const message = friendlyError(error, fallback);
+  errorMessage.value = message;
+  pushActivity('error', 'Ação não concluída', message);
 }
 
 function selectedVersion() {
@@ -152,11 +181,26 @@ function buildParams() {
   return { params, mode };
 }
 
-function friendlyError(error) {
+function friendlyError(error, fallback = 'Erro inesperado.') {
   if (error?.message === 'Failed to fetch') {
-    return 'Falha ao conectar com a API. Verifique URL, CORS e se o Render está acordado.';
+    return 'Não foi possível conectar com a API. Verifique a URL, CORS e se o Render está ativo.';
   }
-  return error?.message || 'Erro inesperado.';
+  if (error?.status === 401) {
+    return 'Chave de API ausente. Gere ou cole uma chave antes de salvar alterações.';
+  }
+  if (error?.status === 403) {
+    return 'Chave de API inválida ou revogada. Gere uma nova chave e tente novamente.';
+  }
+  if (error?.status === 404) {
+    return 'Registro não encontrado. Atualize a listagem e tente novamente.';
+  }
+  if (error?.status === 409 || /integridade|constraint|dependente|viol/i.test(error?.message || '')) {
+    return 'Conflito no banco. Verifique vínculos dependentes ou campos únicos já usados, como nave principal de personagem.';
+  }
+  if (error?.status === 400) {
+    return 'Dados inválidos. Confira campos obrigatórios e valores de enum.';
+  }
+  return error?.message || fallback;
 }
 
 async function loadList() {
@@ -182,8 +226,9 @@ async function loadList() {
       selected.value = rows.value[0];
       syncForm(activeResource.value, rows.value[0]);
     }
+    pushActivity('success', 'Listagem atualizada', `${collection.items.length} registro(s) carregado(s).`);
   } catch (error) {
-    errorMessage.value = friendlyError(error);
+    showError(error, 'Falha ao carregar listagem.');
     rows.value = [];
     pageInfo.value = { number: 0, totalPages: 1, totalElements: 0 };
   } finally {
@@ -200,8 +245,9 @@ async function loadDetail(row) {
       version: selectedVersion()
     });
     syncForm(activeResource.value, selected.value);
+    pushActivity('success', 'Registro carregado', `${currentConfig.value.label} #${row.id} pronto para edição.`);
   } catch (error) {
-    errorMessage.value = friendlyError(error);
+    showError(error, 'Falha ao carregar registro.');
   } finally {
     loading.value = false;
   }
@@ -224,12 +270,14 @@ function changePage(item) {
 function resetForm() {
   selected.value = null;
   syncForm(activeResource.value, null);
+  pushActivity('info', 'Formulário limpo', 'Pronto para criar um novo registro.');
 }
 
 function openCreateForm() {
   selected.value = null;
   syncForm(activeResource.value, null);
   resourceMode.value = 'form';
+  pushActivity('info', 'Tela de criação aberta', `Novo cadastro em ${currentConfig.value.label}.`);
 }
 
 async function openEditForm(row) {
@@ -239,6 +287,7 @@ async function openEditForm(row) {
 
 function closeForm() {
   resourceMode.value = 'list';
+  pushActivity('info', 'Retorno para listagem', currentConfig.value.label);
 }
 
 function displayValue(value) {
@@ -293,8 +342,9 @@ async function saveRecord() {
     selected.value = response;
     await loadList();
     resourceMode.value = 'list';
+    pushActivity('success', updating ? 'Registro atualizado' : 'Registro criado', `${currentConfig.value.label} salvo com sucesso.`);
   } catch (error) {
-    errorMessage.value = friendlyError(error);
+    showError(error, 'Falha ao salvar registro.');
   } finally {
     loading.value = false;
   }
@@ -313,8 +363,9 @@ async function deleteRecord() {
     resetForm();
     await loadList();
     resourceMode.value = 'list';
+    pushActivity('success', 'Registro removido', `${currentConfig.value.label} excluído com sucesso.`);
   } catch (error) {
-    errorMessage.value = friendlyError(error);
+    showError(error, 'Falha ao remover registro.');
   } finally {
     loading.value = false;
   }
@@ -328,8 +379,9 @@ async function generateKey() {
       method: 'POST',
       body: { owner: keyOwner.value || 'Professor' }
     });
+    pushActivity('success', 'Chave gerada', 'Copie a chave e cole no campo Chave de API.');
   } catch (error) {
-    errorMessage.value = friendlyError(error);
+    showError(error, 'Falha ao gerar chave.');
   } finally {
     loading.value = false;
   }
@@ -345,8 +397,9 @@ async function revokeKey() {
       apiKey: apiKey.value.trim()
     });
     latestCreatedKey.value.active = false;
+    pushActivity('success', 'Chave revogada', 'A última chave gerada foi desativada.');
   } catch (error) {
-    errorMessage.value = friendlyError(error);
+    showError(error, 'Falha ao revogar chave.');
   } finally {
     loading.value = false;
   }
@@ -448,6 +501,16 @@ onMounted(async () => {
         </button>
       </section>
 
+      <section v-else-if="latestActivity" class="status-banner" :class="latestActivity.type">
+        <CheckCircle2 v-if="latestActivity.type === 'success'" :size="18" />
+        <Info v-else-if="latestActivity.type === 'info'" :size="18" />
+        <CircleAlert v-else :size="18" />
+        <div>
+          <strong>{{ latestActivity.title }}</strong>
+          <span>{{ latestActivity.detail }}</span>
+        </div>
+      </section>
+
       <section v-if="activePage === 'overview'" class="overview-grid">
         <article class="panel overview-main">
           <div class="panel-head">
@@ -487,6 +550,31 @@ onMounted(async () => {
               <span>{{ resourceConfigs[key].label }}</span>
               <ChevronRight :size="16" />
             </button>
+          </div>
+        </article>
+
+        <article class="panel activity-panel">
+          <div class="panel-head">
+            <div>
+              <span class="section-kicker">Histórico</span>
+              <h2>Atividade recente</h2>
+            </div>
+          </div>
+          <div class="activity-list">
+            <div v-for="entry in activityLog" :key="entry.id" class="activity-item" :class="entry.type">
+              <CheckCircle2 v-if="entry.type === 'success'" :size="16" />
+              <Info v-else-if="entry.type === 'info'" :size="16" />
+              <CircleAlert v-else :size="16" />
+              <div>
+                <strong>{{ entry.title }}</strong>
+                <span>{{ entry.detail }}</span>
+              </div>
+              <time>{{ entry.time }}</time>
+            </div>
+            <div v-if="!activityLog.length" class="activity-empty">
+              <Clock3 :size="16" />
+              Nenhuma ação registrada nesta sessão.
+            </div>
           </div>
         </article>
       </section>
@@ -565,7 +653,7 @@ onMounted(async () => {
                       <button :disabled="isFilmV2" @click.stop="openEditForm(row)">
                         Editar
                       </button>
-                      <button class="danger" :disabled="isFilmV2" @click.stop="selected = row; deleteRecord()">
+                      <button class="danger" :disabled="isFilmV2 || !writeReady" @click.stop="selected = row; deleteRecord()">
                         Excluir
                       </button>
                     </div>
@@ -602,11 +690,16 @@ onMounted(async () => {
                 <ChevronLeft :size="16" />
                 Voltar
               </button>
-              <button class="danger" :disabled="!selected?.id || isFilmV2" @click="deleteRecord">
+              <button class="danger" :disabled="!selected?.id || isFilmV2 || !writeReady" @click="deleteRecord">
                 <Trash2 :size="16" />
                 Excluir
               </button>
             </div>
+          </div>
+
+          <div class="form-hint" :class="{ warn: !writeReady || isFilmV2 }">
+            <Info :size="16" />
+            <span>{{ formHint }}</span>
           </div>
 
           <form class="edit-form" @submit.prevent="saveRecord">
@@ -635,7 +728,7 @@ onMounted(async () => {
               />
             </label>
 
-            <button class="primary wide" type="submit" :disabled="isFilmV2">
+            <button class="primary wide" type="submit" :disabled="isFilmV2 || !writeReady">
               <Save :size="16" />
               {{ selected?.id ? 'Salvar alterações' : 'Criar registro' }}
             </button>
