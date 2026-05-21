@@ -1,24 +1,25 @@
 export const resourceConfigs = {
   films: {
-    label: 'Films',
+    label: 'Filmes',
+    subtitle: 'Controle de episódios, personagens e naves ligadas aos filmes.',
     path: '/api/films',
     versionable: true,
     searchModes: [
-      { label: 'Title', key: 'title', endpoint: '/search/by-title' },
-      { label: 'Director', key: 'director', endpoint: '/search/by-director' }
+      { label: 'Título', key: 'title', endpoint: '/search/by-title' },
+      { label: 'Diretor', key: 'director', endpoint: '/search/by-director' }
     ],
     defaultSearchMode: 'title',
     summaryFields: ['title', 'episodeId', 'director', 'releaseDate'],
     fields: [
-      { name: 'title', label: 'Title', type: 'text', required: true },
-      { name: 'episodeId', label: 'Episode', type: 'number' },
-      { name: 'director', label: 'Director', type: 'text', required: true },
-      { name: 'producer', label: 'Producer', type: 'text' },
-      { name: 'releaseDate', label: 'Release date', type: 'text' },
-      { name: 'openingCrawl', label: 'Opening crawl', type: 'textarea' },
-      { name: 'swapiUrl', label: 'SWAPI URL', type: 'text' },
-      { name: 'characters', label: 'Characters', type: 'multiRelation', source: 'people' },
-      { name: 'starships', label: 'Starships', type: 'multiRelation', source: 'starships' }
+      { name: 'title', label: 'Título', type: 'text', required: true },
+      { name: 'episodeId', label: 'Episódio', type: 'number' },
+      { name: 'director', label: 'Diretor', type: 'text', required: true },
+      { name: 'producer', label: 'Produtor', type: 'text' },
+      { name: 'releaseDate', label: 'Data de lançamento', type: 'text' },
+      { name: 'openingCrawl', label: 'Texto de abertura', type: 'textarea' },
+      { name: 'swapiUrl', label: 'URL da SWAPI', type: 'text' },
+      { name: 'characters', label: 'Personagens', type: 'multiRelation', source: 'people' },
+      { name: 'starships', label: 'Naves', type: 'multiRelation', source: 'starships' }
     ],
     defaults: {
       title: '',
@@ -33,24 +34,25 @@ export const resourceConfigs = {
     }
   },
   people: {
-    label: 'People',
+    label: 'Personagens',
+    subtitle: 'Cadastro de personagens com vínculos de planeta, espécie e nave principal.',
     path: '/api/people',
     searchModes: [
-      { label: 'Name', key: 'name', endpoint: '/search/by-name' },
-      { label: 'Gender', key: 'gender', endpoint: '/search/by-gender' }
+      { label: 'Nome', key: 'name', endpoint: '/search/by-name' },
+      { label: 'Gênero', key: 'gender', endpoint: '/search/by-gender' }
     ],
     defaultSearchMode: 'name',
     summaryFields: ['name', 'birthYear', 'gender', 'height'],
     fields: [
-      { name: 'name', label: 'Name', type: 'text', required: true },
-      { name: 'birthYear', label: 'Birth year', type: 'text' },
-      { name: 'gender', label: 'Gender', type: 'text' },
-      { name: 'height', label: 'Height', type: 'text' },
-      { name: 'mass', label: 'Mass', type: 'text' },
-      { name: 'swapiUrl', label: 'SWAPI URL', type: 'text' },
-      { name: 'planet', label: 'Planet', type: 'relation', source: 'planets' },
-      { name: 'species', label: 'Species', type: 'relation', source: 'species' },
-      { name: 'primaryShip', label: 'Primary ship', type: 'relation', source: 'starships' }
+      { name: 'name', label: 'Nome', type: 'text', required: true },
+      { name: 'birthYear', label: 'Ano de nascimento', type: 'text' },
+      { name: 'gender', label: 'Gênero', type: 'text' },
+      { name: 'height', label: 'Altura', type: 'text' },
+      { name: 'mass', label: 'Massa', type: 'text' },
+      { name: 'swapiUrl', label: 'URL da SWAPI', type: 'text' },
+      { name: 'planet', label: 'Planeta', type: 'relation', source: 'planets' },
+      { name: 'species', label: 'Espécie', type: 'relation', source: 'species' },
+      { name: 'primaryShip', label: 'Nave principal', type: 'relation', source: 'starships' }
     ],
     defaults: {
       name: '',
@@ -65,27 +67,28 @@ export const resourceConfigs = {
     }
   },
   planets: {
-    label: 'Planets',
+    label: 'Planetas',
+    subtitle: 'Controle de mundos, clima e território.',
     path: '/api/planets',
     searchModes: [
-      { label: 'Name', key: 'name', endpoint: '/search/by-name' },
-      { label: 'Climate', key: 'climate', endpoint: '/search/by-climate' }
+      { label: 'Nome', key: 'name', endpoint: '/search/by-name' },
+      { label: 'Clima', key: 'climate', endpoint: '/search/by-climate' }
     ],
     defaultSearchMode: 'name',
     summaryFields: ['name', 'climate', 'terrain', 'population'],
     fields: [
-      { name: 'name', label: 'Name', type: 'text', required: true },
+      { name: 'name', label: 'Nome', type: 'text', required: true },
       {
         name: 'climate',
-        label: 'Climate',
+        label: 'Clima',
         type: 'enum',
         required: true,
         options: ['ARID', 'TEMPERATE', 'TROPICAL', 'FROZEN', 'MURKY', 'HOT', 'WINDY', 'POLLUTED', 'SUBARCTIC', 'SUPERHEATED', 'ARTIFICIAL', 'UNKNOWN']
       },
-      { name: 'terrain', label: 'Terrain', type: 'text' },
-      { name: 'population', label: 'Population', type: 'text' },
-      { name: 'diameter', label: 'Diameter', type: 'text' },
-      { name: 'swapiUrl', label: 'SWAPI URL', type: 'text' }
+      { name: 'terrain', label: 'Terreno', type: 'text' },
+      { name: 'population', label: 'População', type: 'text' },
+      { name: 'diameter', label: 'Diâmetro', type: 'text' },
+      { name: 'swapiUrl', label: 'URL da SWAPI', type: 'text' }
     ],
     defaults: {
       name: '',
@@ -97,28 +100,29 @@ export const resourceConfigs = {
     }
   },
   species: {
-    label: 'Species',
+    label: 'Espécies',
+    subtitle: 'Cadastro de espécies e planeta de origem.',
     path: '/api/species',
     searchModes: [
-      { label: 'Name', key: 'name', endpoint: '/search/by-name' },
-      { label: 'Classification', key: 'classification', endpoint: '/search/by-classification' }
+      { label: 'Nome', key: 'name', endpoint: '/search/by-name' },
+      { label: 'Classificação', key: 'classification', endpoint: '/search/by-classification' }
     ],
     defaultSearchMode: 'name',
     summaryFields: ['name', 'classification', 'language', 'averageHeight'],
     fields: [
-      { name: 'name', label: 'Name', type: 'text', required: true },
+      { name: 'name', label: 'Nome', type: 'text', required: true },
       {
         name: 'classification',
-        label: 'Classification',
+        label: 'Classificação',
         type: 'enum',
         required: true,
         options: ['MAMMAL', 'REPTILE', 'AMPHIBIAN', 'ARTIFICIAL', 'INSECTOID', 'GASTROPOD', 'SENTIENT', 'UNKNOWN']
       },
-      { name: 'language', label: 'Language', type: 'text' },
-      { name: 'averageHeight', label: 'Average height', type: 'text' },
-      { name: 'averageLifespan', label: 'Average lifespan', type: 'text' },
-      { name: 'swapiUrl', label: 'SWAPI URL', type: 'text' },
-      { name: 'homeworld', label: 'Homeworld', type: 'relation', source: 'planets' }
+      { name: 'language', label: 'Idioma', type: 'text' },
+      { name: 'averageHeight', label: 'Altura média', type: 'text' },
+      { name: 'averageLifespan', label: 'Expectativa de vida', type: 'text' },
+      { name: 'swapiUrl', label: 'URL da SWAPI', type: 'text' },
+      { name: 'homeworld', label: 'Planeta natal', type: 'relation', source: 'planets' }
     ],
     defaults: {
       name: '',
@@ -131,24 +135,25 @@ export const resourceConfigs = {
     }
   },
   starships: {
-    label: 'Starships',
+    label: 'Naves',
+    subtitle: 'Cadastro de naves estelares, modelos e capacidade.',
     path: '/api/starships',
     searchModes: [
-      { label: 'Name', key: 'name', endpoint: '/search/by-name' },
-      { label: 'Class', key: 'starshipClass', endpoint: '/search/by-class' }
+      { label: 'Nome', key: 'name', endpoint: '/search/by-name' },
+      { label: 'Classe', key: 'starshipClass', endpoint: '/search/by-class' }
     ],
     defaultSearchMode: 'name',
     summaryFields: ['name', 'model', 'starshipClass', 'crew'],
     fields: [
-      { name: 'name', label: 'Name', type: 'text', required: true },
-      { name: 'model', label: 'Model', type: 'text' },
-      { name: 'manufacturer', label: 'Manufacturer', type: 'text' },
-      { name: 'costInCredits', label: 'Cost in credits', type: 'text' },
-      { name: 'length', label: 'Length', type: 'text' },
-      { name: 'crew', label: 'Crew', type: 'text' },
-      { name: 'passengers', label: 'Passengers', type: 'text' },
-      { name: 'starshipClass', label: 'Starship class', type: 'text' },
-      { name: 'swapiUrl', label: 'SWAPI URL', type: 'text' }
+      { name: 'name', label: 'Nome', type: 'text', required: true },
+      { name: 'model', label: 'Modelo', type: 'text' },
+      { name: 'manufacturer', label: 'Fabricante', type: 'text' },
+      { name: 'costInCredits', label: 'Custo em créditos', type: 'text' },
+      { name: 'length', label: 'Comprimento', type: 'text' },
+      { name: 'crew', label: 'Tripulação', type: 'text' },
+      { name: 'passengers', label: 'Passageiros', type: 'text' },
+      { name: 'starshipClass', label: 'Classe', type: 'text' },
+      { name: 'swapiUrl', label: 'URL da SWAPI', type: 'text' }
     ],
     defaults: {
       name: '',
@@ -165,8 +170,8 @@ export const resourceConfigs = {
 };
 
 export const relationSources = {
-  planets: { label: 'Planets', resource: 'planets' },
-  people: { label: 'People', resource: 'people' },
-  species: { label: 'Species', resource: 'species' },
-  starships: { label: 'Starships', resource: 'starships' }
+  planets: { label: 'Planetas', resource: 'planets' },
+  people: { label: 'Personagens', resource: 'people' },
+  species: { label: 'Espécies', resource: 'species' },
+  starships: { label: 'Naves', resource: 'starships' }
 };

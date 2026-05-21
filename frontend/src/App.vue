@@ -5,7 +5,9 @@ import { relationSources, resourceConfigs } from './resourceConfig';
 
 const baseUrl = ref(localStorage.getItem('sw-base-url') || getDefaultBaseUrl());
 const apiKey = ref(localStorage.getItem('sw-api-key') || '');
+const keyOwner = ref('Professor');
 const activeResource = ref('films');
+const filmVersion = ref('1');
 const searchMode = ref(resourceConfigs.films.defaultSearchMode);
 const searchValue = ref('');
 const page = ref(0);
@@ -16,20 +18,13 @@ const loading = ref(false);
 const errorMessage = ref('');
 const selected = ref(null);
 const latestCreatedKey = ref(null);
-const keyOwner = ref('Professor');
+
 const relationOptions = reactive({
   planets: [],
   people: [],
   species: [],
   starships: []
 });
-const relationLoading = reactive({
-  planets: false,
-  people: false,
-  species: false,
-  starships: false
-});
-const filmVersion = ref('1');
 
 const form = reactive({});
 
@@ -41,21 +36,22 @@ function syncForm(resource, source) {
   const defaults = cloneDefaults(resource);
   Object.keys(form).forEach((key) => delete form[key]);
   Object.assign(form, defaults);
-  if (source) {
-    const config = resourceConfigs[resource];
-    config.fields.forEach((field) => {
-      const value = source[field.name];
-      if (field.type === 'relation') {
-        form[field.name] = value?.id ?? '';
-      } else if (field.type === 'multiRelation') {
-        form[field.name] = Array.isArray(value) ? value.map((entry) => entry.id).filter(Boolean) : [];
-      } else if (field.type === 'enum') {
-        form[field.name] = value || defaults[field.name];
-      } else {
-        form[field.name] = value ?? defaults[field.name];
-      }
-    });
-  }
+
+  if (!source) return;
+
+  const config = resourceConfigs[resource];
+  config.fields.forEach((field) => {
+    const value = source[field.name];
+    if (field.type === 'relation') {
+      form[field.name] = value?.id ?? '';
+      return;
+    }
+    if (field.type === 'multiRelation') {
+      form[field.name] = Array.isArray(value) ? value.map((entry) => entry.id).filter(Boolean) : [];
+      return;
+    }
+    form[field.name] = value ?? defaults[field.name];
+  });
 }
 
 function persistSettings() {
@@ -65,33 +61,71 @@ function persistSettings() {
 
 const currentConfig = computed(() => resourceConfigs[activeResource.value]);
 const searchModes = computed(() => currentConfig.value.searchModes || []);
-const versionable = computed(() => Boolean(currentConfig.value.versionable));
 const summaryFields = computed(() => currentConfig.value.summaryFields || []);
 const formFields = computed(() => currentConfig.value.fields || []);
+const fieldLabels = computed(() =>
+  Object.fromEntries((currentConfig.value.fields || []).map((field) => [field.name, field.label]))
+);
+const filmV2Columns = [
+  { key: 'title', label: 'Título' },
+  { key: 'episodeId', label: 'Episódio' },
+  { key: 'director', label: 'Diretor' },
+  { key: 'releaseDate', label: 'Lançamento' },
+  { key: 'characterCount', label: 'Personagens' },
+  { key: 'starshipCount', label: 'Naves' }
+];
 const title = computed(() => currentConfig.value.label);
-const canWrite = computed(() => Boolean(apiKey.value.trim()));
+const subtitle = computed(() => currentConfig.value.subtitle || '');
+const versionLabel = computed(() => (activeResource.value === 'films' ? `Filmes v${filmVersion.value}` : title.value));
+const hasApiKey = computed(() => Boolean(apiKey.value.trim()));
+const connected = computed(() => Boolean(baseUrl.value.trim()));
+const headerMode = computed(() => activeResource.value === 'films' && filmVersion.value === '2' ? 'v2' : 'v1');
+
+function getSelectedVersion() {
+  return activeResource.value === 'films' && filmVersion.value === '2' ? '2' : '';
+}
+
+function isFilmV2() {
+  return activeResource.value === 'films' && filmVersion.value === '2';
+}
 
 function makeEmptyForm() {
   selected.value = null;
   syncForm(activeResource.value, null);
 }
 
-function resourceLabelForKey(key) {
-  return relationSources[key]?.label || key;
+function badgeText(item) {
+  if (!item) return 'Sem vínculo';
+  return item.name || item.title || `#${item.id}`;
+}
+
+function prettyValue(value) {
+  if (Array.isArray(value)) {
+    return value.map(badgeText).join(', ') || '—';
+  }
+  if (value && typeof value === 'object') {
+    return value.name || value.title || value.key || `#${value.id || 'objeto'}`;
+  }
+  if (value === undefined || value === null || value === '') return '—';
+  return String(value);
+}
+
+function formatSummary(item, fieldName) {
+  return prettyValue(item?.[fieldName]);
+}
+
+function labelForField(fieldName) {
+  return fieldLabels.value[fieldName] || fieldName;
 }
 
 async function loadRelationOptions(resourceKey) {
-  relationLoading[resourceKey] = true;
   try {
     const response = await apiRequest(baseUrl.value, resourceConfigs[relationSources[resourceKey].resource].path, {
-      params: { page: 0, size: 200 },
-      version: relationSources[resourceKey].resource === 'films' && filmVersion.value === '2' ? '2' : ''
+      params: { page: 0, size: 200 }
     });
     relationOptions[resourceKey] = unwrapCollection(response).items;
   } catch {
     relationOptions[resourceKey] = [];
-  } finally {
-    relationLoading[resourceKey] = false;
   }
 }
 
@@ -102,10 +136,6 @@ async function loadAllRelationOptions() {
     loadRelationOptions('species'),
     loadRelationOptions('starships')
   ]);
-}
-
-function getSelectedVersion() {
-  return activeResource.value === 'films' && filmVersion.value === '2' ? '2' : '';
 }
 
 function buildSearchParams() {
@@ -126,17 +156,11 @@ async function loadList() {
   try {
     const config = currentConfig.value;
     const { params, mode } = buildSearchParams();
-    let path = config.path;
-
-    if (searchValue.value.trim() && mode) {
-      path = `${config.path}${mode.endpoint}`;
-    }
-
+    const path = searchValue.value.trim() && mode ? `${config.path}${mode.endpoint}` : config.path;
     const response = await apiRequest(baseUrl.value, path, {
       params,
       version: getSelectedVersion()
     });
-
     const collection = unwrapCollection(response);
     items.value = collection.items;
     pageInfo.value = collection.page || {
@@ -144,7 +168,7 @@ async function loadList() {
       totalPages: response.totalPages ?? 1,
       totalElements: response.totalElements ?? collection.items.length
     };
-    if (items.value.length > 0 && !selected.value) {
+    if (!selected.value && items.value.length) {
       selected.value = items.value[0];
       syncForm(activeResource.value, items.value[0]);
     }
@@ -159,7 +183,6 @@ async function loadList() {
 
 async function loadDetail(item) {
   if (!item?.id) return;
-  selected.value = null;
   loading.value = true;
   errorMessage.value = '';
   try {
@@ -181,9 +204,7 @@ function serializeField(field) {
     return value ? { id: Number(value) } : null;
   }
   if (field.type === 'multiRelation') {
-    return Array.isArray(value)
-      ? value.filter(Boolean).map((id) => ({ id: Number(id) }))
-      : [];
+    return Array.isArray(value) ? value.filter(Boolean).map((id) => ({ id: Number(id) })) : [];
   }
   if (field.type === 'number') {
     return value === '' || value === null ? null : Number(value);
@@ -203,25 +224,18 @@ async function submitForm(mode) {
   loading.value = true;
   errorMessage.value = '';
   try {
-    const payload = buildPayload();
-    const idempotencyKey = mode === 'create' ? crypto.randomUUID() : '';
     const path = mode === 'create'
       ? currentConfig.value.path
       : `${currentConfig.value.path}/${selected.value?.id}`;
-    const method = mode === 'create' ? 'POST' : 'PUT';
     const response = await apiRequest(baseUrl.value, path, {
-      method,
-      body: payload,
+      method: mode === 'create' ? 'POST' : 'PUT',
+      body: buildPayload(),
       apiKey: apiKey.value.trim(),
-      idempotencyKey,
+      idempotencyKey: mode === 'create' ? crypto.randomUUID() : '',
       version: getSelectedVersion()
     });
-    const entity = response?.id ? response : response?._embedded ? response : response;
-    selected.value = entity;
+    selected.value = response;
     await loadList();
-    if (entity?.id) {
-      await loadDetail(entity);
-    }
   } catch (error) {
     errorMessage.value = error.message;
   } finally {
@@ -288,7 +302,7 @@ function switchResource(resourceKey) {
   searchValue.value = '';
   page.value = 0;
   selected.value = null;
-  makeEmptyForm();
+  syncForm(activeResource.value, null);
   loadList();
 }
 
@@ -306,36 +320,13 @@ function nextPage() {
   }
 }
 
-function badgeText(item) {
-  if (!item) return 'None';
-  return item.name || item.title || `#${item.id}`;
-}
-
-function prettyValue(value) {
-  if (Array.isArray(value)) {
-    return value.map(badgeText).join(', ') || '—';
-  }
-  if (value && typeof value === 'object') {
-    return value.name || value.title || value.key || `#${value.id || 'object'}`;
-  }
-  if (value === undefined || value === null || value === '') return '—';
-  return String(value);
-}
-
-function formatSummary(item, fieldName) {
-  return prettyValue(item?.[fieldName]);
-}
-
 watch(baseUrl, persistSettings);
 watch(apiKey, persistSettings);
 watch(filmVersion, () => {
   if (activeResource.value === 'films') {
+    selected.value = null;
     loadList();
-    loadAllRelationOptions();
   }
-});
-watch(activeResource, () => {
-  loadAllRelationOptions();
 });
 
 onMounted(async () => {
@@ -346,320 +337,258 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="shell">
-    <header class="hero">
-      <div class="hero__glow"></div>
-      <div class="hero__topline">
-        <span class="eyebrow">Imperial command deck</span>
-        <span class="status-pill" :class="{ ok: !loading, busy: loading }">
-          {{ loading ? 'Processing' : 'Ready' }}
-        </span>
-      </div>
-      <div class="hero__grid">
+  <div class="dashboard">
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand__mark">SW</span>
         <div>
-          <h1>Star Wars API Control Center</h1>
-          <p>
-            Manage films, people, planets, species and starships through the live Spring Boot API.
-          </p>
-        </div>
-        <div class="hero__stats">
-          <div>
-            <strong>{{ title }}</strong>
-            <span>Active sector</span>
-          </div>
-          <div>
-            <strong>{{ pageInfo.totalElements || items.length }}</strong>
-            <span>Records visible</span>
-          </div>
-          <div>
-            <strong>{{ latestCreatedKey?.key ? 'Issued' : 'Idle' }}</strong>
-            <span>API key vault</span>
-          </div>
-        </div>
-      </div>
-    </header>
-
-    <section class="toolbar">
-      <label>
-        <span>API base URL</span>
-        <input v-model="baseUrl" type="text" placeholder="https://your-backend.vercel.app" />
-      </label>
-      <label>
-        <span>X-API-Key</span>
-        <input v-model="apiKey" type="password" placeholder="Paste your API key" />
-      </label>
-      <label>
-        <span>Page size</span>
-        <input v-model.number="size" type="number" min="1" max="100" @change="loadList" />
-      </label>
-      <div v-if="versionable" class="version-switch">
-        <span>Film version</span>
-        <div class="segmented">
-          <button :class="{ active: filmVersion === '1' }" @click="filmVersion = '1'">v1</button>
-          <button :class="{ active: filmVersion === '2' }" @click="filmVersion = '2'">v2</button>
-        </div>
-      </div>
-    </section>
-
-    <section class="resources">
-      <button
-        v-for="resource in Object.keys(resourceConfigs)"
-        :key="resource"
-        class="resource-tab"
-        :class="{ active: activeResource === resource }"
-        @click="switchResource(resource)"
-      >
-        {{ resourceConfigs[resource].label }}
-      </button>
-    </section>
-
-    <section v-if="activeResource !== 'films' || filmVersion === '1'" class="workspace">
-      <div class="panel list-panel">
-        <div class="panel__head">
-          <div>
-            <h2>{{ title }} registry</h2>
-            <p>{{ summaryFields.join(' · ') }}</p>
-          </div>
-          <div class="panel__actions">
-            <button @click="loadList">Refresh</button>
-          </div>
-        </div>
-
-        <div class="search-row" v-if="searchModes.length">
-          <label>
-            <span>Search mode</span>
-            <select v-model="searchMode">
-              <option v-for="mode in searchModes" :key="mode.key" :value="mode.key">
-                {{ mode.label }}
-              </option>
-            </select>
-          </label>
-          <label class="search-input">
-            <span>Search value</span>
-            <input
-              v-model="searchValue"
-              type="text"
-              :placeholder="`Search ${title.toLowerCase()}`"
-              @keyup.enter="loadList"
-            />
-          </label>
-          <button class="primary" @click="loadList">Search</button>
-        </div>
-
-        <div class="table-wrap">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th v-for="field in summaryFields" :key="field">{{ field }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="item in items"
-                :key="item.id"
-                :class="{ selected: selected?.id === item.id }"
-                @click="loadDetail(item)"
-              >
-                <td>{{ item.id }}</td>
-                <td v-for="field in summaryFields" :key="field">
-                  {{ formatSummary(item, field) }}
-                </td>
-              </tr>
-              <tr v-if="!items.length && !loading">
-                <td :colspan="summaryFields.length + 1" class="empty-state">No records loaded.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="pager">
-          <span>Page {{ (pageInfo.number ?? 0) + 1 }} / {{ pageInfo.totalPages || 1 }}</span>
-          <div>
-            <button :disabled="page <= 0" @click="previousPage">Prev</button>
-            <button :disabled="pageInfo.totalPages ? page + 1 >= pageInfo.totalPages : true" @click="nextPage">
-              Next
-            </button>
-          </div>
+          <strong>Painel Administrativo</strong>
+          <span>API Star Wars</span>
         </div>
       </div>
 
-      <div class="panel editor-panel">
-        <div class="panel__head">
-          <div>
-            <h2>Record editor</h2>
-            <p>Selected item, form and JSON payload.</p>
-          </div>
-          <div class="panel__actions">
-            <button @click="makeEmptyForm">New</button>
-            <button class="danger" :disabled="!selected?.id" @click="removeItem">Delete</button>
-          </div>
-        </div>
-
-        <pre class="json-box">{{ selected ? JSON.stringify(selected, null, 2) : 'Select an item to inspect.' }}</pre>
-
-        <form class="form-grid" @submit.prevent="submitForm(selected?.id ? 'update' : 'create')">
-          <div v-for="field in formFields" :key="field.name" class="field">
-            <label :for="field.name">{{ field.label }}</label>
-            <input
-              v-if="field.type === 'text' || field.type === 'number'"
-              :id="field.name"
-              v-model="form[field.name]"
-              :type="field.type === 'number' ? 'number' : 'text'"
-              :required="field.required"
-              :placeholder="field.label"
-            />
-            <textarea
-              v-else-if="field.type === 'textarea'"
-              :id="field.name"
-              v-model="form[field.name]"
-              rows="4"
-            ></textarea>
-            <select v-else-if="field.type === 'enum'" :id="field.name" v-model="form[field.name]" :required="field.required">
-              <option v-for="option in field.options" :key="option" :value="option">{{ option }}</option>
-            </select>
-            <select v-else-if="field.type === 'relation'" :id="field.name" v-model="form[field.name]">
-              <option value="">None</option>
-              <option v-for="option in relationOptions[field.source]" :key="option.id" :value="option.id">
-                #{{ option.id }} - {{ badgeText(option) }}
-              </option>
-            </select>
-            <select
-              v-else-if="field.type === 'multiRelation'"
-              :id="field.name"
-              v-model="form[field.name]"
-              multiple
-              size="5"
-            >
-              <option v-for="option in relationOptions[field.source]" :key="option.id" :value="option.id">
-                #{{ option.id }} - {{ badgeText(option) }}
-              </option>
-            </select>
-          </div>
-
-          <div class="submit-row">
-            <button class="primary" type="submit">
-              {{ selected?.id ? 'Update record' : 'Create record' }}
-            </button>
-          </div>
-        </form>
-      </div>
-    </section>
-
-    <section v-else class="workspace film-v2">
-      <div class="panel list-panel">
-        <div class="panel__head">
-          <div>
-            <h2>Films v2 feed</h2>
-            <p>Compact payload by header X-API-Version: 2.</p>
-          </div>
-          <div class="panel__actions">
-            <button @click="loadList">Refresh</button>
-          </div>
-        </div>
-
-        <div class="search-row">
-          <label>
-            <span>Search mode</span>
-            <select v-model="searchMode">
-              <option value="title">Title</option>
-              <option value="director">Director</option>
-            </select>
-          </label>
-          <label class="search-input">
-            <span>Search value</span>
-            <input
-              v-model="searchValue"
-              type="text"
-              placeholder="Search films"
-              @keyup.enter="loadList"
-            />
-          </label>
-          <button class="primary" @click="loadList">Search</button>
-        </div>
-
-        <div class="table-wrap">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Title</th>
-                <th>Episode</th>
-                <th>Director</th>
-                <th>Release</th>
-                <th>Characters</th>
-                <th>Starships</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="item in items" :key="item.id" :class="{ selected: selected?.id === item.id }" @click="loadDetail(item)">
-                <td>{{ item.id }}</td>
-                <td>{{ item.title }}</td>
-                <td>{{ item.episodeId }}</td>
-                <td>{{ item.director }}</td>
-                <td>{{ item.releaseDate }}</td>
-                <td>{{ item.characterCount }}</td>
-                <td>{{ item.starshipCount }}</td>
-              </tr>
-              <tr v-if="!items.length && !loading">
-                <td colspan="7" class="empty-state">No film summaries loaded.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="pager">
-          <span>Page {{ (pageInfo.number ?? 0) + 1 }} / {{ pageInfo.totalPages || 1 }}</span>
-          <div>
-            <button :disabled="page <= 0" @click="previousPage">Prev</button>
-            <button :disabled="pageInfo.totalPages ? page + 1 >= pageInfo.totalPages : true" @click="nextPage">
-              Next
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div class="panel editor-panel">
-        <div class="panel__head">
-          <div>
-            <h2>Film editor</h2>
-            <p>Use v1 endpoints for create/update/delete. v2 is read-only.</p>
-          </div>
-        </div>
-
-        <pre class="json-box">{{ selected ? JSON.stringify(selected, null, 2) : 'Select a film to inspect.' }}</pre>
-        <div class="empty-state">
-          Film v2 is read-only. Switch back to v1 to create, update or delete films.
-        </div>
-      </div>
-    </section>
-
-    <section class="panel auth-panel">
-      <div class="panel__head">
+      <div class="status-block">
         <div>
-          <h2>API key vault</h2>
-          <p>Generate a key, copy it once and paste it in X-API-Key above.</p>
+          <span>Conexão</span>
+          <strong>{{ connected ? 'Ativa' : 'Sem URL' }}</strong>
+        </div>
+        <div>
+          <span>Autorização</span>
+          <strong>{{ hasApiKey ? 'Configurada' : 'Ausente' }}</strong>
         </div>
       </div>
 
-      <div class="auth-grid">
+      <div class="stacked-form">
         <label>
-          <span>Owner</span>
+          <span>URL da API</span>
+          <input v-model="baseUrl" type="text" placeholder="https://..." />
+        </label>
+        <label>
+          <span>Chave de API</span>
+          <input v-model="apiKey" type="password" placeholder="X-API-Key" />
+        </label>
+        <label>
+          <span>Responsável da chave</span>
           <input v-model="keyOwner" type="text" placeholder="Professor" />
         </label>
-        <div class="auth-actions">
-          <button class="primary" @click.prevent="createApiKey">Generate key</button>
-          <button :disabled="!latestCreatedKey?.id" @click.prevent="revokeLatestKey">Revoke latest</button>
-        </div>
       </div>
 
-      <pre class="json-box">
-{{ latestCreatedKey ? JSON.stringify(latestCreatedKey, null, 2) : 'No key generated in this browser yet.' }}
-      </pre>
-    </section>
+      <div class="nav-group">
+        <button
+          v-for="resource in Object.keys(resourceConfigs)"
+          :key="resource"
+          class="nav-button"
+          :class="{ active: activeResource === resource }"
+          @click="switchResource(resource)"
+        >
+          {{ resourceConfigs[resource].label }}
+        </button>
+      </div>
 
-    <section v-if="errorMessage" class="error-strip">
-      {{ errorMessage }}
-    </section>
+      <div class="sidebar-foot">
+        <div v-if="activeResource === 'films'" class="segmented-block">
+          <span>Versão dos filmes</span>
+          <div class="segmented">
+            <button :class="{ active: filmVersion === '1' }" @click="filmVersion = '1'">V1</button>
+            <button :class="{ active: filmVersion === '2' }" @click="filmVersion = '2'">V2</button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Sistema de administração</p>
+          <h1>{{ versionLabel }}</h1>
+          <p class="subtitle">{{ subtitle || 'Controle de registros, vínculos e chaves de acesso.' }}</p>
+        </div>
+        <div class="topbar__meta">
+          <div class="meta-card">
+            <span>Registros</span>
+            <strong>{{ pageInfo.totalElements || items.length }}</strong>
+          </div>
+          <div class="meta-card">
+            <span>Página</span>
+            <strong>{{ (pageInfo.number ?? 0) + 1 }}</strong>
+          </div>
+          <div class="meta-card">
+            <span>Modo</span>
+            <strong>{{ headerMode }}</strong>
+          </div>
+        </div>
+      </header>
+
+      <section class="workspace">
+        <section class="panel list-panel">
+          <div class="panel__head">
+            <div>
+              <h2>{{ title }}</h2>
+              <p>{{ currentConfig.description || 'Listagem paginada com busca e seleção.' }}</p>
+            </div>
+            <div class="panel__actions">
+              <button @click="loadList">Atualizar</button>
+            </div>
+          </div>
+
+          <div v-if="searchModes.length && !isFilmV2()" class="searchbar">
+            <label>
+              <span>Filtro</span>
+              <select v-model="searchMode">
+                <option v-for="mode in searchModes" :key="mode.key" :value="mode.key">
+                  {{ mode.label }}
+                </option>
+              </select>
+            </label>
+            <label class="searchbar__value">
+              <span>Texto</span>
+              <input
+                v-model="searchValue"
+                type="text"
+                :placeholder="`Buscar ${title.toLowerCase()}`"
+                @keyup.enter="loadList"
+              />
+            </label>
+            <button class="primary" @click="loadList">Filtrar</button>
+          </div>
+
+          <div v-if="isFilmV2()" class="notice">
+            V2 somente leitura. Use a V1 para criar, editar e excluir.
+          </div>
+
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+              <tr>
+                  <th>ID</th>
+                  <th
+                    v-for="field in isFilmV2() ? filmV2Columns : summaryFields"
+                    :key="isFilmV2() ? field.key : field"
+                  >
+                    {{ isFilmV2() ? field.label : labelForField(field) }}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="item in items"
+                  :key="item.id"
+                  :class="{ selected: selected?.id === item.id }"
+                  @click="loadDetail(item)"
+                >
+                  <td>{{ item.id }}</td>
+                  <template v-if="isFilmV2()">
+                    <td>{{ item.title }}</td>
+                    <td>{{ item.episodeId }}</td>
+                    <td>{{ item.director }}</td>
+                    <td>{{ item.releaseDate }}</td>
+                    <td>{{ item.characterCount }}</td>
+                    <td>{{ item.starshipCount }}</td>
+                  </template>
+                  <template v-else>
+                    <td v-for="field in summaryFields" :key="field">{{ formatSummary(item, field) }}</td>
+                  </template>
+                </tr>
+                <tr v-if="!items.length && !loading">
+                  <td :colspan="isFilmV2() ? 7 : summaryFields.length + 1" class="empty-state">
+                    Nenhum registro carregado.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pager">
+            <span>Página {{ (pageInfo.number ?? 0) + 1 }} de {{ pageInfo.totalPages || 1 }}</span>
+            <div>
+              <button :disabled="page <= 0" @click="previousPage">Anterior</button>
+              <button :disabled="pageInfo.totalPages ? page + 1 >= pageInfo.totalPages : true" @click="nextPage">Próxima</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel editor-panel">
+          <div class="panel__head">
+            <div>
+              <h2>Detalhe e edição</h2>
+              <p>JSON bruto acima, formulário abaixo.</p>
+            </div>
+            <div class="panel__actions">
+              <button @click="makeEmptyForm">Novo</button>
+              <button class="danger" :disabled="!selected?.id || isFilmV2()" @click="removeItem">Excluir</button>
+            </div>
+          </div>
+
+          <pre class="json-box">{{ selected ? JSON.stringify(selected, null, 2) : 'Selecione um registro.' }}</pre>
+
+          <form class="form-grid" @submit.prevent="submitForm(selected?.id ? 'update' : 'create')">
+            <div v-for="field in formFields" :key="field.name" class="field">
+              <label :for="field.name">{{ field.label }}</label>
+              <input
+                v-if="field.type === 'text' || field.type === 'number'"
+                :id="field.name"
+                v-model="form[field.name]"
+                :type="field.type === 'number' ? 'number' : 'text'"
+                :required="field.required"
+              />
+              <textarea
+                v-else-if="field.type === 'textarea'"
+                :id="field.name"
+                v-model="form[field.name]"
+                rows="4"
+              ></textarea>
+              <select v-else-if="field.type === 'enum'" :id="field.name" v-model="form[field.name]" :required="field.required">
+                <option v-for="option in field.options" :key="option" :value="option">{{ option }}</option>
+              </select>
+              <select v-else-if="field.type === 'relation'" :id="field.name" v-model="form[field.name]">
+                <option value="">Sem vínculo</option>
+                <option v-for="option in relationOptions[field.source]" :key="option.id" :value="option.id">
+                  #{{ option.id }} - {{ badgeText(option) }}
+                </option>
+              </select>
+              <select v-else-if="field.type === 'multiRelation'" :id="field.name" v-model="form[field.name]" multiple size="5">
+                <option v-for="option in relationOptions[field.source]" :key="option.id" :value="option.id">
+                  #{{ option.id }} - {{ badgeText(option) }}
+                </option>
+              </select>
+            </div>
+
+            <div class="form-actions">
+              <button class="primary" type="submit" :disabled="isFilmV2()">
+                {{ selected?.id ? 'Salvar alteração' : 'Criar registro' }}
+              </button>
+            </div>
+          </form>
+        </section>
+      </section>
+
+      <section class="panel key-panel">
+        <div class="panel__head">
+          <div>
+            <h2>Chave de acesso</h2>
+            <p>Gerar e revogar chaves da API.</p>
+          </div>
+        </div>
+
+        <div class="key-grid">
+          <div class="key-card">
+            <span>Responsável</span>
+            <input v-model="keyOwner" type="text" placeholder="Professor" />
+          </div>
+          <div class="key-actions">
+            <button class="primary" @click.prevent="createApiKey">Gerar chave</button>
+            <button :disabled="!latestCreatedKey?.id" @click.prevent="revokeLatestKey">Revogar última</button>
+          </div>
+        </div>
+
+        <pre class="json-box">
+{{ latestCreatedKey ? JSON.stringify(latestCreatedKey, null, 2) : 'Nenhuma chave gerada nesta sessão.' }}
+        </pre>
+      </section>
+
+      <section v-if="errorMessage" class="error-strip">
+        {{ errorMessage }}
+      </section>
+    </main>
   </div>
 </template>
