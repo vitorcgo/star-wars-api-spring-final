@@ -246,6 +246,8 @@ h2 {
 
 .top-actions,
 .editor-actions,
+.table-actions,
+.row-actions,
 .pager div,
 .key-form {
   display: flex;
@@ -302,11 +304,9 @@ h2 {
   gap: 12px;
 }
 
-.resource-layout {
+.resource-page {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 420px;
   gap: 12px;
-  align-items: start;
 }
 
 .panel {
@@ -389,7 +389,7 @@ h2 {
 
 table {
   width: 100%;
-  min-width: 760px;
+  min-width: 900px;
   border-collapse: collapse;
 }
 
@@ -452,8 +452,8 @@ tbody tr.selected {
 
 .edit-form {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
 }
 
 .edit-form textarea,
@@ -463,24 +463,6 @@ tbody tr.selected {
 
 .wide {
   grid-column: 1 / -1;
-}
-
-.json-preview {
-  margin-top: 10px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.json-preview > div {
-  height: 34px;
-  padding: 0 10px;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  color: var(--green);
-  background: rgba(66, 232, 141, 0.055);
-  border-bottom: 1px solid var(--line);
 }
 
 pre,
@@ -519,7 +501,7 @@ pre,
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  .resource-layout,
+  .resource-page,
   .overview-grid,
   .keys-layout {
     grid-template-columns: 1fr;
@@ -548,6 +530,8 @@ pre,
 
   .top-actions,
   .editor-actions,
+  .table-actions,
+  .row-actions,
   .pager div {
     justify-content: stretch;
   }

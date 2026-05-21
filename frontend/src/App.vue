@@ -11,7 +11,6 @@ import {
   Layers3,
   ListFilter,
   Network,
-  PencilLine,
   Plus,
   RefreshCw,
   Save,
@@ -30,6 +29,7 @@ const apiKey = ref(localStorage.getItem('api-key') || '');
 const keyOwner = ref('Professor');
 const activePage = ref('overview');
 const activeResource = ref('films');
+const resourceMode = ref('list');
 const filmVersion = ref('1');
 const searchMode = ref(resourceConfigs.films.defaultSearchMode);
 const searchValue = ref('');
@@ -69,6 +69,10 @@ const isFilmV2 = computed(() => activeResource.value === 'films' && filmVersion.
 const searchModes = computed(() => currentConfig.value.searchModes || []);
 const summaryFields = computed(() => currentConfig.value.summaryFields || []);
 const formFields = computed(() => currentConfig.value.fields || []);
+const hiddenFormFields = new Set(['swapiUrl', 'openingCrawl', 'characters', 'starships']);
+const visibleFormFields = computed(() =>
+  formFields.value.filter((field) => !hiddenFormFields.has(field.name))
+);
 const fieldLabels = computed(() =>
   Object.fromEntries(formFields.value.map((field) => [field.name, field.label]))
 );
@@ -78,6 +82,7 @@ const writeReady = computed(() => Boolean(apiKey.value.trim()));
 const pageTitle = computed(() => {
   if (activePage.value === 'overview') return 'Visão geral';
   if (activePage.value === 'keys') return 'Chaves de acesso';
+  if (resourceMode.value === 'form') return selected.value?.id ? `Editar ${currentConfig.value.label}` : `Novo ${currentConfig.value.label}`;
   return `${currentConfig.value.label}${isFilmV2.value ? ' V2' : ''}`;
 });
 
@@ -206,6 +211,7 @@ function changePage(item) {
   activePage.value = item.id;
   if (item.resource) {
     activeResource.value = item.resource;
+    resourceMode.value = 'list';
     searchMode.value = resourceConfigs[item.resource].defaultSearchMode;
     searchValue.value = '';
     page.value = 0;
@@ -218,6 +224,21 @@ function changePage(item) {
 function resetForm() {
   selected.value = null;
   syncForm(activeResource.value, null);
+}
+
+function openCreateForm() {
+  selected.value = null;
+  syncForm(activeResource.value, null);
+  resourceMode.value = 'form';
+}
+
+async function openEditForm(row) {
+  await loadDetail(row);
+  resourceMode.value = 'form';
+}
+
+function closeForm() {
+  resourceMode.value = 'list';
 }
 
 function displayValue(value) {
@@ -245,6 +266,10 @@ function serializeField(field) {
 function buildPayload() {
   const payload = {};
   formFields.value.forEach((field) => {
+    if (hiddenFormFields.has(field.name) && selected.value?.id) {
+      payload[field.name] = selected.value[field.name];
+      return;
+    }
     payload[field.name] = serializeField(field);
   });
   return payload;
@@ -267,6 +292,7 @@ async function saveRecord() {
     );
     selected.value = response;
     await loadList();
+    resourceMode.value = 'list';
   } catch (error) {
     errorMessage.value = friendlyError(error);
   } finally {
@@ -286,6 +312,7 @@ async function deleteRecord() {
     });
     resetForm();
     await loadList();
+    resourceMode.value = 'list';
   } catch (error) {
     errorMessage.value = friendlyError(error);
   } finally {
@@ -342,6 +369,7 @@ watch(apiKey, persistConnection);
 watch(filmVersion, () => {
   if (activeResource.value === 'films') {
     selected.value = null;
+    resourceMode.value = 'list';
     loadList();
   }
 });
@@ -463,16 +491,22 @@ onMounted(async () => {
         </article>
       </section>
 
-      <section v-else-if="isResourcePage" class="resource-layout">
-        <section class="panel table-panel">
+      <section v-else-if="isResourcePage" class="resource-page">
+        <section v-if="resourceMode === 'list'" class="panel table-panel">
           <div class="panel-head compact">
             <div>
               <span class="section-kicker">{{ currentConfig.subtitle }}</span>
               <h2>{{ currentConfig.label }}</h2>
             </div>
-            <div v-if="activeResource === 'films'" class="segmented">
-              <button :class="{ active: filmVersion === '1' }" @click="filmVersion = '1'">V1</button>
-              <button :class="{ active: filmVersion === '2' }" @click="filmVersion = '2'">V2</button>
+            <div class="table-actions">
+              <div v-if="activeResource === 'films'" class="segmented">
+                <button :class="{ active: filmVersion === '1' }" @click="filmVersion = '1'">V1</button>
+                <button :class="{ active: filmVersion === '2' }" @click="filmVersion = '2'">V2</button>
+              </div>
+              <button class="primary" :disabled="isFilmV2" @click="openCreateForm">
+                <Plus :size="16" />
+                Novo
+              </button>
             </div>
           </div>
 
@@ -509,6 +543,7 @@ onMounted(async () => {
                   <th v-for="column in visibleColumns" :key="isFilmV2 ? column.key : column">
                     {{ isFilmV2 ? column.label : fieldLabel(column) }}
                   </th>
+                  <th>Ações</th>
                 </tr>
               </thead>
               <tbody>
@@ -525,9 +560,19 @@ onMounted(async () => {
                   <template v-else>
                     <td v-for="column in visibleColumns" :key="column">{{ displayField(row, column) }}</td>
                   </template>
+                  <td>
+                    <div class="row-actions">
+                      <button :disabled="isFilmV2" @click.stop="openEditForm(row)">
+                        Editar
+                      </button>
+                      <button class="danger" :disabled="isFilmV2" @click.stop="selected = row; deleteRecord()">
+                        Excluir
+                      </button>
+                    </div>
+                  </td>
                 </tr>
                 <tr v-if="!rows.length && !loading">
-                  <td :colspan="visibleColumns.length + 1" class="empty-cell">Nenhum registro encontrado.</td>
+                  <td :colspan="visibleColumns.length + 2" class="empty-cell">Nenhum registro encontrado.</td>
                 </tr>
               </tbody>
             </table>
@@ -546,24 +591,26 @@ onMounted(async () => {
           </footer>
         </section>
 
-        <section class="panel editor-panel">
+        <section v-else class="panel form-panel">
           <div class="panel-head compact">
             <div>
-              <span class="section-kicker">Registro selecionado</span>
-              <h2>Edição</h2>
+              <span class="section-kicker">{{ currentConfig.label }}</span>
+              <h2>{{ selected?.id ? 'Editar registro' : 'Criar registro' }}</h2>
             </div>
             <div class="editor-actions">
-              <button @click="resetForm">
-                <Plus :size="16" />
+              <button @click="closeForm">
+                <ChevronLeft :size="16" />
+                Voltar
               </button>
               <button class="danger" :disabled="!selected?.id || isFilmV2" @click="deleteRecord">
                 <Trash2 :size="16" />
+                Excluir
               </button>
             </div>
           </div>
 
           <form class="edit-form" @submit.prevent="saveRecord">
-            <label v-for="field in formFields" :key="field.name">
+            <label v-for="field in visibleFormFields" :key="field.name">
               <span>{{ field.label }}</span>
               <textarea v-if="field.type === 'textarea'" v-model="form[field.name]" rows="4"></textarea>
               <select v-else-if="field.type === 'enum'" v-model="form[field.name]">
@@ -593,14 +640,6 @@ onMounted(async () => {
               {{ selected?.id ? 'Salvar alterações' : 'Criar registro' }}
             </button>
           </form>
-
-          <div class="json-preview">
-            <div>
-              <PencilLine :size="16" />
-              <span>JSON</span>
-            </div>
-            <pre>{{ selected ? JSON.stringify(selected, null, 2) : 'Nenhum registro selecionado.' }}</pre>
-          </div>
         </section>
       </section>
 
