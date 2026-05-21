@@ -17,7 +17,7 @@ export const resourceConfigs = {
       { name: 'producer', label: 'Produtor', type: 'text' },
       { name: 'releaseDate', label: 'Data de lançamento', type: 'text' },
       { name: 'openingCrawl', label: 'Texto de abertura', type: 'textarea' },
-      { name: 'swapiUrl', label: 'URL da SWAPI', type: 'text' },
+      { name: 'swapiUrl', label: 'URL externa', type: 'text' },
       { name: 'characters', label: 'Personagens', type: 'multiRelation', source: 'people' },
       { name: 'starships', label: 'Naves', type: 'multiRelation', source: 'starships' }
     ],
@@ -49,7 +49,7 @@ export const resourceConfigs = {
       { name: 'gender', label: 'Gênero', type: 'text' },
       { name: 'height', label: 'Altura', type: 'text' },
       { name: 'mass', label: 'Massa', type: 'text' },
-      { name: 'swapiUrl', label: 'URL da SWAPI', type: 'text' },
+      { name: 'swapiUrl', label: 'URL externa', type: 'text' },
       { name: 'planet', label: 'Planeta', type: 'relation', source: 'planets' },
       { name: 'species', label: 'Espécie', type: 'relation', source: 'species' },
       { name: 'primaryShip', label: 'Nave principal', type: 'relation', source: 'starships' }
@@ -88,7 +88,7 @@ export const resourceConfigs = {
       { name: 'terrain', label: 'Terreno', type: 'text' },
       { name: 'population', label: 'População', type: 'text' },
       { name: 'diameter', label: 'Diâmetro', type: 'text' },
-      { name: 'swapiUrl', label: 'URL da SWAPI', type: 'text' }
+      { name: 'swapiUrl', label: 'URL externa', type: 'text' }
     ],
     defaults: {
       name: '',
@@ -121,7 +121,7 @@ export const resourceConfigs = {
       { name: 'language', label: 'Idioma', type: 'text' },
       { name: 'averageHeight', label: 'Altura média', type: 'text' },
       { name: 'averageLifespan', label: 'Expectativa de vida', type: 'text' },
-      { name: 'swapiUrl', label: 'URL da SWAPI', type: 'text' },
+      { name: 'swapiUrl', label: 'URL externa', type: 'text' },
       { name: 'homeworld', label: 'Planeta natal', type: 'relation', source: 'planets' }
     ],
     defaults: {
@@ -153,7 +153,7 @@ export const resourceConfigs = {
       { name: 'crew', label: 'Tripulação', type: 'text' },
       { name: 'passengers', label: 'Passageiros', type: 'text' },
       { name: 'starshipClass', label: 'Classe', type: 'text' },
-      { name: 'swapiUrl', label: 'URL da SWAPI', type: 'text' }
+      { name: 'swapiUrl', label: 'URL externa', type: 'text' }
     ],
     defaults: {
       name: '',

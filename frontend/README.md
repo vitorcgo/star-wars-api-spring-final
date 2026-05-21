@@ -1,10 +1,10 @@
-# Star Wars Command Deck
+# Painel Administrativo
 
-Frontend Vue 3 para a API Star Wars.
+Frontend Vue 3 para gerenciamento da API.
 
-## Variáveis de ambiente
+## Variaveis de ambiente
 
-- `VITE_API_BASE_URL`: URL pública do backend.
+- `VITE_API_BASE_URL`: URL publica do backend.
 
 ## Rodar localmente
 
@@ -13,17 +13,9 @@ npm install
 npm run dev
 ```
 
-## Deploy na Vercel
+## Deploy na Netlify
 
-1. Crie um projeto novo na Vercel apontando para a pasta `frontend/`.
-2. Configure:
-   - Framework Preset: Vite
-   - Build Command: `npm run build`
-   - Output Directory: `dist`
-3. Adicione a variável `VITE_API_BASE_URL` com a URL pública da API.
-4. Faça deploy.
-
-## Importante
-
-Este frontend pode ficar 100% na Vercel.
-O backend Spring Boot não fica 100% na Vercel sem uma reescrita para serverless functions.
+- Base directory: `frontend`
+- Build command: `npm run build`
+- Publish directory: `dist`
+- Variavel: `VITE_API_BASE_URL=https://star-wars-api-spring-final.onrender.com`
