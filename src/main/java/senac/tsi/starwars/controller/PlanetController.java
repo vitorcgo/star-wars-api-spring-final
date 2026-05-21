@@ -41,7 +41,8 @@ public class PlanetController {
         this.pagedAssembler = pagedAssembler;
     }
 
-    @Operation(summary = "Lista todos os planetas (paginado)")
+    @Operation(summary = "Lista todos os planetas (paginado)",
+            description = "Retorna uma pagina de planetas cadastrados, com links HATEOAS para consultar, atualizar e remover.")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Lista retornada")})
     @GetMapping
     public ResponseEntity<PagedModel<EntityModel<Planet>>> getAll(@ParameterObject Pageable pageable) {
@@ -56,7 +57,8 @@ public class PlanetController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Busca planeta por ID")
+    @Operation(summary = "Busca planeta por ID",
+            description = "Retorna os dados de um planeta especifico, incluindo clima, terreno, populacao e links de navegacao.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Planeta encontrado",
                     content = @Content(schema = @Schema(implementation = Planet.class))),
@@ -75,7 +77,9 @@ public class PlanetController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Cria um novo planeta", security = @SecurityRequirement(name = "apiKey"))
+    @Operation(summary = "Cria um novo planeta",
+            description = "Cria um planeta novo com validacao dos campos obrigatorios e enum de clima. Requer X-API-Key valida.",
+            security = @SecurityRequirement(name = "apiKey"))
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Planeta criado"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content),
@@ -93,7 +97,9 @@ public class PlanetController {
         return ResponseEntity.status(HttpStatus.CREATED).body(model);
     }
 
-    @Operation(summary = "Atualiza um planeta existente", security = @SecurityRequirement(name = "apiKey"))
+    @Operation(summary = "Atualiza um planeta existente",
+            description = "Atualiza os dados de um planeta existente pelo ID informado. Requer X-API-Key valida.",
+            security = @SecurityRequirement(name = "apiKey"))
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Planeta atualizado"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content),
@@ -113,7 +119,9 @@ public class PlanetController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Remove um planeta", security = @SecurityRequirement(name = "apiKey"))
+    @Operation(summary = "Remove um planeta",
+            description = "Remove um planeta quando nao houver personagens ou especies dependentes impedindo a exclusao.",
+            security = @SecurityRequirement(name = "apiKey"))
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Planeta removido"),
             @ApiResponse(responseCode = "401", description = "X-API-Key ausente", content = @Content),
@@ -128,7 +136,7 @@ public class PlanetController {
     }
 
     @Operation(summary = "Busca planetas por clima",
-            description = "Valores possíveis: ARID, TEMPERATE, TROPICAL, FROZEN, MURKY, HOT, WINDY, POLLUTED, SUBARCTIC, SUPERHEATED, ARTIFICIAL, UNKNOWN")
+            description = "Filtra planetas pelo enum de clima e retorna resultado paginado. Valores possiveis: ARID, TEMPERATE, TROPICAL, FROZEN, MURKY, HOT, WINDY, POLLUTED, SUBARCTIC, SUPERHEATED, ARTIFICIAL, UNKNOWN.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Resultado da busca"),
             @ApiResponse(responseCode = "400", description = "Valor de clima inválido", content = @Content)
@@ -144,7 +152,8 @@ public class PlanetController {
         ));
     }
 
-    @Operation(summary = "Busca planetas por nome (parcial)")
+    @Operation(summary = "Busca planetas por nome (parcial)",
+            description = "Pesquisa planetas por parte do nome e retorna resultado paginado com link para cada planeta.")
     @GetMapping("/search/by-name")
     public ResponseEntity<PagedModel<EntityModel<Planet>>> findByName(
             @Parameter(description = "Trecho do nome") @RequestParam String name,

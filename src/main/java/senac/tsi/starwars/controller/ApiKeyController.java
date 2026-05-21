@@ -52,7 +52,7 @@ public class ApiKeyController {
     }
 
     @Operation(summary = "Revoga uma API Key",
-            description = "Desativa uma API Key existente. Requer autenticação com header X-API-Key válido.",
+            description = "Desativa uma API Key existente para impedir novas operacoes de escrita com essa chave. Requer header X-API-Key valido.",
             security = @SecurityRequirement(name = "apiKey"))
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "API Key revogada"),

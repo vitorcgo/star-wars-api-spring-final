@@ -63,7 +63,8 @@ public class FilmV2Controller {
         return ResponseEntity.ok(result);
     }
 
-    @Operation(summary = "Busca filme por ID (V2 - formato resumido)")
+    @Operation(summary = "Busca filme por ID (V2 - formato resumido)",
+            description = "Retorna um filme em formato reduzido quando o header X-API-Version=2 e enviado, incluindo contadores de personagens e naves.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Filme encontrado (V2)"),
             @ApiResponse(responseCode = "404", description = "Filme não encontrado")

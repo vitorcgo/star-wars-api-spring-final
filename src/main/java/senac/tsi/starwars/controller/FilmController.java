@@ -40,7 +40,8 @@ public class FilmController {
         this.pagedAssembler = pagedAssembler;
     }
 
-    @Operation(summary = "Lista todos os filmes (paginado)")
+    @Operation(summary = "Lista todos os filmes (paginado)",
+            description = "Retorna uma pagina de filmes cadastrados, com links HATEOAS para consultar, atualizar e remover cada registro.")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Lista retornada")})
     @GetMapping
     public ResponseEntity<PagedModel<EntityModel<Film>>> getAll(@ParameterObject Pageable pageable) {
@@ -55,7 +56,8 @@ public class FilmController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Busca filme por ID")
+    @Operation(summary = "Busca filme por ID",
+            description = "Retorna os detalhes completos de um filme especifico, incluindo seus relacionamentos com personagens e naves.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Filme encontrado",
                     content = @Content(schema = @Schema(implementation = Film.class))),
@@ -74,7 +76,9 @@ public class FilmController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Cria um novo filme", security = @SecurityRequirement(name = "apiKey"))
+    @Operation(summary = "Cria um novo filme",
+            description = "Cria um registro de filme com validacao dos campos obrigatorios. Requer X-API-Key valida.",
+            security = @SecurityRequirement(name = "apiKey"))
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Filme criado"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content),
@@ -92,7 +96,9 @@ public class FilmController {
         return ResponseEntity.status(HttpStatus.CREATED).body(model);
     }
 
-    @Operation(summary = "Atualiza um filme", security = @SecurityRequirement(name = "apiKey"))
+    @Operation(summary = "Atualiza um filme",
+            description = "Atualiza os dados de um filme existente pelo ID informado. Requer X-API-Key valida.",
+            security = @SecurityRequirement(name = "apiKey"))
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Filme atualizado"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content),
@@ -112,7 +118,9 @@ public class FilmController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Remove um filme", security = @SecurityRequirement(name = "apiKey"))
+    @Operation(summary = "Remove um filme",
+            description = "Remove um filme existente quando nao houver restricoes de integridade com outros registros.",
+            security = @SecurityRequirement(name = "apiKey"))
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Filme removido"),
             @ApiResponse(responseCode = "401", description = "X-API-Key ausente", content = @Content),
@@ -127,7 +135,7 @@ public class FilmController {
     }
 
     @Operation(summary = "Busca filmes por diretor",
-            description = "Ex: ?director=George para encontrar filmes de George Lucas")
+            description = "Pesquisa filmes pelo nome completo ou parcial do diretor. Exemplo: ?director=George para encontrar filmes de George Lucas.")
     @GetMapping("/search/by-director")
     public ResponseEntity<PagedModel<EntityModel<Film>>> findByDirector(
             @Parameter(description = "Nome do diretor (parcial)") @RequestParam String director,
@@ -139,7 +147,8 @@ public class FilmController {
         ));
     }
 
-    @Operation(summary = "Busca filmes por título (parcial)")
+    @Operation(summary = "Busca filmes por título (parcial)",
+            description = "Pesquisa filmes por parte do titulo e retorna resultado paginado com link para cada filme encontrado.")
     @GetMapping("/search/by-title")
     public ResponseEntity<PagedModel<EntityModel<Film>>> findByTitle(
             @Parameter(description = "Trecho do título") @RequestParam String title,

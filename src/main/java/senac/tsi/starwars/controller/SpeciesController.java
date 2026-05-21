@@ -41,7 +41,8 @@ public class SpeciesController {
         this.pagedAssembler = pagedAssembler;
     }
 
-    @Operation(summary = "Lista todas as espécies (paginado)")
+    @Operation(summary = "Lista todas as espécies (paginado)",
+            description = "Retorna uma pagina de especies cadastradas, com links HATEOAS para consultar, atualizar e remover.")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Lista retornada")})
     @GetMapping
     public ResponseEntity<PagedModel<EntityModel<Species>>> getAll(@ParameterObject Pageable pageable) {
@@ -56,7 +57,8 @@ public class SpeciesController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Busca espécie por ID")
+    @Operation(summary = "Busca espécie por ID",
+            description = "Retorna os dados de uma especie especifica, incluindo classificacao, idioma e planeta natal quando informado.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Espécie encontrada",
                     content = @Content(schema = @Schema(implementation = Species.class))),
@@ -75,7 +77,9 @@ public class SpeciesController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Cria uma nova espécie", security = @SecurityRequirement(name = "apiKey"))
+    @Operation(summary = "Cria uma nova espécie",
+            description = "Cria uma especie nova com validacao dos campos obrigatorios e classificacao por enum. Requer X-API-Key valida.",
+            security = @SecurityRequirement(name = "apiKey"))
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Espécie criada"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content),
@@ -93,7 +97,9 @@ public class SpeciesController {
         return ResponseEntity.status(HttpStatus.CREATED).body(model);
     }
 
-    @Operation(summary = "Atualiza uma espécie", security = @SecurityRequirement(name = "apiKey"))
+    @Operation(summary = "Atualiza uma espécie",
+            description = "Atualiza os dados de uma especie existente pelo ID informado. Requer X-API-Key valida.",
+            security = @SecurityRequirement(name = "apiKey"))
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Espécie atualizada"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content),
@@ -113,7 +119,9 @@ public class SpeciesController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Remove uma espécie", security = @SecurityRequirement(name = "apiKey"))
+    @Operation(summary = "Remove uma espécie",
+            description = "Remove uma especie quando nao houver personagens ou outros registros dependentes impedindo a exclusao.",
+            security = @SecurityRequirement(name = "apiKey"))
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Espécie removida"),
             @ApiResponse(responseCode = "401", description = "X-API-Key ausente", content = @Content),
@@ -128,7 +136,7 @@ public class SpeciesController {
     }
 
     @Operation(summary = "Busca espécies por classificação biológica",
-            description = "Valores possíveis: MAMMAL, REPTILE, AMPHIBIAN, ARTIFICIAL, INSECTOID, GASTROPOD, SENTIENT, UNKNOWN")
+            description = "Filtra especies pelo enum de classificacao biologica e retorna resultado paginado. Valores possiveis: MAMMAL, REPTILE, AMPHIBIAN, ARTIFICIAL, INSECTOID, GASTROPOD, SENTIENT, UNKNOWN.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Resultado da busca"),
             @ApiResponse(responseCode = "400", description = "Valor de classificação inválido", content = @Content)
@@ -144,7 +152,8 @@ public class SpeciesController {
         ));
     }
 
-    @Operation(summary = "Busca espécies por nome (parcial)")
+    @Operation(summary = "Busca espécies por nome (parcial)",
+            description = "Pesquisa especies por parte do nome e retorna resultado paginado com link para cada especie.")
     @GetMapping("/search/by-name")
     public ResponseEntity<PagedModel<EntityModel<Species>>> findByName(
             @Parameter(description = "Trecho do nome") @RequestParam String name,

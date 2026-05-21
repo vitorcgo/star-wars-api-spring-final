@@ -40,7 +40,8 @@ public class PersonController {
         this.pagedAssembler = pagedAssembler;
     }
 
-    @Operation(summary = "Lista todos os personagens (paginado)")
+    @Operation(summary = "Lista todos os personagens (paginado)",
+            description = "Retorna uma pagina de personagens, com links HATEOAS para consulta, atualizacao e remocao.")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Lista retornada")})
     @GetMapping
     public ResponseEntity<PagedModel<EntityModel<Person>>> getAll(@ParameterObject Pageable pageable) {
@@ -55,7 +56,8 @@ public class PersonController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Busca personagem por ID")
+    @Operation(summary = "Busca personagem por ID",
+            description = "Retorna um personagem especifico com seus dados principais e relacionamentos com planeta, especie e nave.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Personagem encontrado",
                     content = @Content(schema = @Schema(implementation = Person.class))),
@@ -74,7 +76,9 @@ public class PersonController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Cria um novo personagem", security = @SecurityRequirement(name = "apiKey"))
+    @Operation(summary = "Cria um novo personagem",
+            description = "Cria um personagem novo usando validacao Bean Validation. Requer X-API-Key valida.",
+            security = @SecurityRequirement(name = "apiKey"))
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Personagem criado"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content),
@@ -92,7 +96,9 @@ public class PersonController {
         return ResponseEntity.status(HttpStatus.CREATED).body(model);
     }
 
-    @Operation(summary = "Atualiza um personagem", security = @SecurityRequirement(name = "apiKey"))
+    @Operation(summary = "Atualiza um personagem",
+            description = "Atualiza os dados de um personagem existente pelo ID informado. Requer X-API-Key valida.",
+            security = @SecurityRequirement(name = "apiKey"))
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Personagem atualizado"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content),
@@ -112,7 +118,9 @@ public class PersonController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Remove um personagem", security = @SecurityRequirement(name = "apiKey"))
+    @Operation(summary = "Remove um personagem",
+            description = "Remove um personagem quando a operacao nao violar relacionamentos ou restricoes do banco.",
+            security = @SecurityRequirement(name = "apiKey"))
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Personagem removido"),
             @ApiResponse(responseCode = "401", description = "X-API-Key ausente", content = @Content),
@@ -127,7 +135,7 @@ public class PersonController {
     }
 
     @Operation(summary = "Busca personagens por gênero",
-            description = "Ex: male, female, n/a")
+            description = "Filtra personagens pelo genero informado e retorna o resultado paginado. Exemplos aceitos pelos dados da SWAPI: male, female, n/a.")
     @GetMapping("/search/by-gender")
     public ResponseEntity<PagedModel<EntityModel<Person>>> findByGender(
             @Parameter(description = "Gênero do personagem") @RequestParam String gender,
@@ -139,7 +147,8 @@ public class PersonController {
         ));
     }
 
-    @Operation(summary = "Busca personagens por nome (parcial)")
+    @Operation(summary = "Busca personagens por nome (parcial)",
+            description = "Pesquisa personagens por trecho do nome e retorna resultado paginado com link para cada registro.")
     @GetMapping("/search/by-name")
     public ResponseEntity<PagedModel<EntityModel<Person>>> findByName(
             @Parameter(description = "Trecho do nome") @RequestParam String name,

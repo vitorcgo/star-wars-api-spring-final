@@ -40,7 +40,8 @@ public class StarshipController {
         this.pagedAssembler = pagedAssembler;
     }
 
-    @Operation(summary = "Lista todas as naves (paginado)")
+    @Operation(summary = "Lista todas as naves (paginado)",
+            description = "Retorna uma pagina de naves estelares, com links HATEOAS para consultar, atualizar e remover.")
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Lista retornada")})
     @GetMapping
     public ResponseEntity<PagedModel<EntityModel<Starship>>> getAll(@ParameterObject Pageable pageable) {
@@ -55,7 +56,8 @@ public class StarshipController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Busca nave por ID")
+    @Operation(summary = "Busca nave por ID",
+            description = "Retorna os dados de uma nave especifica, incluindo modelo, fabricante, tripulacao, passageiros e classe.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Nave encontrada",
                     content = @Content(schema = @Schema(implementation = Starship.class))),
@@ -74,7 +76,9 @@ public class StarshipController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Cria uma nova nave estelar", security = @SecurityRequirement(name = "apiKey"))
+    @Operation(summary = "Cria uma nova nave estelar",
+            description = "Cria uma nave nova com validacao dos campos obrigatorios. Requer X-API-Key valida.",
+            security = @SecurityRequirement(name = "apiKey"))
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Nave criada"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content),
@@ -92,7 +96,9 @@ public class StarshipController {
         return ResponseEntity.status(HttpStatus.CREATED).body(model);
     }
 
-    @Operation(summary = "Atualiza uma nave estelar", security = @SecurityRequirement(name = "apiKey"))
+    @Operation(summary = "Atualiza uma nave estelar",
+            description = "Atualiza os dados de uma nave existente pelo ID informado. Requer X-API-Key valida.",
+            security = @SecurityRequirement(name = "apiKey"))
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Nave atualizada"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content),
@@ -112,7 +118,9 @@ public class StarshipController {
         return ResponseEntity.ok(model);
     }
 
-    @Operation(summary = "Remove uma nave estelar", security = @SecurityRequirement(name = "apiKey"))
+    @Operation(summary = "Remove uma nave estelar",
+            description = "Remove uma nave quando nao houver filmes ou personagens dependentes impedindo a exclusao.",
+            security = @SecurityRequirement(name = "apiKey"))
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Nave removida"),
             @ApiResponse(responseCode = "401", description = "X-API-Key ausente", content = @Content),
@@ -126,7 +134,8 @@ public class StarshipController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Busca naves por classe (ex: Starfighter, Freighter)")
+    @Operation(summary = "Busca naves por classe (ex: Starfighter, Freighter)",
+            description = "Pesquisa naves pela classe informada e retorna resultado paginado com links para os registros.")
     @GetMapping("/search/by-class")
     public ResponseEntity<PagedModel<EntityModel<Starship>>> findByClass(
             @Parameter(description = "Classe da nave") @RequestParam String starshipClass,
@@ -138,7 +147,8 @@ public class StarshipController {
         ));
     }
 
-    @Operation(summary = "Busca naves por nome (parcial)")
+    @Operation(summary = "Busca naves por nome (parcial)",
+            description = "Pesquisa naves por parte do nome e retorna resultado paginado com link para cada nave encontrada.")
     @GetMapping("/search/by-name")
     public ResponseEntity<PagedModel<EntityModel<Starship>>> findByName(
             @Parameter(description = "Trecho do nome") @RequestParam String name,
