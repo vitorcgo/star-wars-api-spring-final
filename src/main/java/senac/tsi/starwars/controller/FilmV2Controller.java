@@ -20,7 +20,7 @@ import senac.tsi.starwars.service.FilmService;
 import java.util.HashMap;
 import java.util.Map;
 
-@Tag(name = "Films V2", description = "Versao alternativa de filmes via header X-API-Version=2. "
+@Tag(name = "Films V2", description = "Versão alternativa de filmes via header X-API-Version=2. "
         + "Formato simplificado sem HATEOAS, com contagem de personagens e naves.")
 @RestController
 @RequestMapping("/api/films")
